@@ -1,12 +1,10 @@
 ## Portfolio
 
 ---
-
-### Category Name 1 
+## Data Analytics/Science
 
 [Airbnb Listings in Amsterdam Project](http://example.com/)
-(https://public.tableau.com/app/profile/cynthia.campos/viz/AirbnbListingsinAmsterdamDashboard/Dashboard1)
-<img src="images/Project1.jpg/>
+<img src="images/Project1.png/>
 
 ---
 [Project 2 Title](/pdf/sample_presentation.pdf)
