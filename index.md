@@ -4,7 +4,7 @@
 ## Data Analytics/Science
 
 [Airbnb Listings in Amsterdam Project](http://example.com/)
-<img src="images/Project1.png"
+<img src="images/Project1.png?raw=true"/> 
 
 ---
 [Project 2 Title](/pdf/sample_presentation.pdf)
