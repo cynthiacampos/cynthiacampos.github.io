@@ -5,6 +5,7 @@
 
 [Airbnb Listings in Amsterdam Project](http://example.com/)
 <img src="images/Project1.png?raw=true"/> 
+https://public.tableau.com/app/profile/cynthia.campos/viz/AirbnbListingsinAmsterdamDashboard/Dashboard1
 
 ---
 [Project 2 Title](/pdf/sample_presentation.pdf)
