@@ -4,8 +4,9 @@
 
 ### Category Name 1 
 
-[Airbnb Listings in Amsterdam Project](https://public.tableau.com/app/profile/cynthia.campos/viz/AirbnbListingsinAmsterdamDashboard/Dashboard1)
-<img src="images/Project1.jpg?raw=true"/>
+[Airbnb Listings in Amsterdam Project](http://example.com/)
+(https://public.tableau.com/app/profile/cynthia.campos/viz/AirbnbListingsinAmsterdamDashboard/Dashboard1)
+<img src="images/Project1.jpg/>
 
 ---
 [Project 2 Title](/pdf/sample_presentation.pdf)
