@@ -3,7 +3,7 @@
 ---
 ## Data Analytics/Science
 
-[Airbnb Listings in Amsterdam Project](http://example.com/)
+[Airbnb Listings in Amsterdam Project](http://cynthiacampos.github.io/sample_page)
 <img src="images/Project1.png?raw=true"/>
 
 
