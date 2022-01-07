@@ -1,3 +1,23 @@
+title: Cynthia Campos # your name (or website title) here
+logo: "LavarTaylorEDITED-15.jpg" # your photo (or logo) here
+description: > # your text below (remove <br> elements if you don't need line breaks)
+  Hello everyone, I'm passionate about analyzing data and here are a few projects to showcase what I can do.
+  <br><br>
+  Extracting, cleaning, and visualizing data are skills that I will continue to master. 
+  <br><br>
+  <a href="https://www.linkedin.com/in/cynthia-campos-b281a4192">View My LinkedIn Profile</a> 
+  <br><br>
+  <a href="https://public.tableau.com/app/profile/cynthia.campos">View My Tableau Profile</a> 
+   
+theme: jekyll-theme-minimal
+google_analytics: UA-000000-0 # your Google Analytics tracking ID here
+
+
+
+
+
+
+
 ## This can be your internal website page / project page
 
 **Project description:** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
