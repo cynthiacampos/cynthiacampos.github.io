@@ -1,11 +1,10 @@
 
 ## Airbnb Listings in Amsterdam Project 
 
-**Project description:** Real Estate Investors are planning to purchase several rental properties in various citites arounf the world over the next few years. They want to list these rental properties on Airbnb and decided their first purchase will be in Amsterdam, Netherlands. Before they pursuit their purchase, they would like clear data about Airbnb property performance in Amsterdam. Their objective is to get information in respect to which location to buy and how much annual income they may be able to earn. I was provided with two datasets and their 
+**Project description:** Real Estate Investors are planning to purchase several rental properties in various cities around the world over the next few years. They want to list these rental properties on Airbnb and decided their first purchase will be in Amsterdam, Netherlands. Before they pursuit their purchase, they would like clear data about Airbnb property performance in Amsterdam. Their objective is to get information in respect to which location to buy and how much annual income they may be able to earn. 
 
 ### 1. Suggest hypotheses about the causes of observed phenomena
-
-The question that frames the objective is "Which  
+The question that frames our focus is, "Based on potential revenue, in which Amsterdam neighborhood should these investors buy their first property?". From there, I derived a question with a key metric of    
 
 ```javascript
 if (isAwesome){
