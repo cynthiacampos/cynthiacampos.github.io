@@ -15,8 +15,7 @@ if (isAwesome){
 
 ### 2. Assess assumptions on which statistical inference will be based
 
-```
-SELECT listings.id, listings.listing_url, listings.availability_365, listings.room_type,listings.accommodates, listings.guests_included, listings.extra_people, listings.property_type,listings.bed_type, listings.neighbourhood, listings.city, listings.security_deposit, listings.price,listings.minimum_nights, listings.maximum_nights, listings.cleaning_fee, ratings.review_scores_rating, ratings.number_of_reviews,listings.reviews_per_month, (listings.reviews_per_month * 2)
+```SELECT listings.id, listings.listing_url, listings.availability_365, listings.room_type,listings.accommodates, listings.guests_included, listings.extra_people, listings.property_type,listings.bed_type, listings.neighbourhood, listings.city, listings.security_deposit, listings.price,listings.minimum_nights, listings.maximum_nights, listings.cleaning_fee, ratings.review_scores_rating, ratings.number_of_reviews,listings.reviews_per_month, (listings.reviews_per_month * 2)
 AS bookings_per_month,
 (CASE WHEN minimum_nights > 3.9 THEN minimum_nights
 WHEN maximum_nights < 3.9 THEN maximum_nights
