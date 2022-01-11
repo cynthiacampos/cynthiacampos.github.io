@@ -30,7 +30,7 @@ FROM listings
 LEFT JOIN ratings
 ON listings.id = ratings.id
 WHERE neighbourhood NOT LIKE 'Centrum-oost' AND neighbourhood NOT LIKE 'Centrum-West'
-AND room_type = 'Entire home/apt'
+AND room_type = 'Entire home/apt';
 ```
 
 ### 3. Support the selection of appropriate statistical tools and techniques
