@@ -6,12 +6,6 @@
 ### 1. Frame 
 The question that frames our focus is, "Based on potential revenue, in which Amsterdam neighborhood should these investors buy their first property?". From this question, it provides the direction on what the analysis should answer in the end.    
 
-```javascript
-if (isAwesome){
-  return true
-}
-```
-
 ### 2. Extract
 I was provided with two large databases with each one containing over 100,000 records. One of the database contained the airbnb listing information, and the other contained the rating information. Both tables had critical information for the analysis, therefore I performed an SQL query to create a dataset.
 
@@ -36,8 +30,8 @@ WHERE neighbourhood NOT LIKE 'Centrum-oost' AND neighbourhood NOT LIKE 'Centrum-
 AND room_type = 'Entire home/apt';
 ```
 
-### 3. Support the selection of appropriate statistical tools and techniques
-
+### 3. Wrangle / Prepare
+After extracting the dataset into Excel, I cleaned up the data by getting rid of null or missing values and replacing it with the average values of that column. Then, I was able to create pivot tables to create 
 <img src="images/dummy_thumbnail.jpg?raw=true"/>
 
 ### 4. Provide a basis for further data collection through surveys or experiments
