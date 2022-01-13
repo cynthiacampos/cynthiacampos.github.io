@@ -31,11 +31,10 @@ AND room_type = 'Entire home/apt';
 ```
 
 ### 3. Wrangle / Prepare
-After extracting the dataset into Excel, I cleaned up the data by getting rid of null or missing values and replacing it with the average values of that column. Then, I was able to create pivot tables to create 
-<img src="images/dummy_thumbnail.jpg?raw=true"/>
+After extracting the dataset into Excel, I cleaned up the data by getting rid of null or missing values and replacing it with the average values of that column. Then, I was able to create pivot tables to create visualizations. 
 
-### 4. Provide a basis for further data collection through surveys or experiments
+I decided to create the visualization dashboard in Tableau. 
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. 
-
+### 4. Analyze / Interpret / Communicate 
+Through analyzing the following dashboard, it shows that the profitable 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
