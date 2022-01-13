@@ -3,8 +3,8 @@
 
 **Project description:** Real Estate Investors are planning to purchase several rental properties in various cities around the world over the next few years. They want to list these rental properties on Airbnb and decided their first purchase will be in Amsterdam, Netherlands. Before they pursuit their purchase, they would like clear data about Airbnb property performance in Amsterdam. Their objective is to get information in respect to which location to buy and how much annual income they may be able to earn. 
 
-### 1. Suggest hypotheses about the causes of observed phenomena
-The question that frames our focus is, "Based on potential revenue, in which Amsterdam neighborhood should these investors buy their first property?". From there, I derived a question with a key metric of    
+### 1. Frame 
+The question that frames our focus is, "Based on potential revenue, in which Amsterdam neighborhood should these investors buy their first property?". From this question, it provides the direction on what the analysis should answer in the end.    
 
 ```javascript
 if (isAwesome){
@@ -12,8 +12,10 @@ if (isAwesome){
 }
 ```
 
-### 2. Assess assumptions on which statistical inference will be based
+### 2. Extract
+I was provided with two large databases with each one containing over 100,000 records. One of the database contained the airbnb listing information, and the other contained the rating information. Both tables had critical information for the analysis, therefore I performed an SQL query to create a dataset.
 
+Below is the following SQL query that I performed. 
 ```
 SELECT listings.id, listings.listing_url, listings.availability_365, listings.room_type,listings.accommodates, listings.guests_included, listings.extra_people, listings.property_type,listings.bed_type, listings.neighbourhood, listings.city, listings.security_deposit, listings.price,listings.minimum_nights, listings.maximum_nights, listings.cleaning_fee, ratings.review_scores_rating, ratings.number_of_reviews,listings.reviews_per_month, (listings.reviews_per_month * 2)
 AS bookings_per_month,
