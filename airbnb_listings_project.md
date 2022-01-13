@@ -37,7 +37,9 @@ I decided to create the visualization dashboard in Tableau.
 
 ### 4. Analyze / Interpret / Communicate 
 <img src="images/Project3.png?raw=true"/>
-Through analyzing the following dashboard, my specific recomendation is for the investors to purchase houses in neighborhoods of Geuzenveld-Slotmeer and Bijlmer-Centrum that can accomodate 2-6 people and to provide real beds. Even though Zuid is a highly profitable and popular neighborhood, there is a high concentrated amount of listings that will drive the supply up and the demand down, resulting in lower bookings in the future. Also, outliers such as varying property types that produce high income may result from different factors out of our control, like views, services, amenities, architecture, etc. Those two neighborhoods are the best options from the data analyzed. 
+Through analyzing the following dashboard, my specific recomendation is for the investors to purchase houses in neighborhoods of Geuzenveld-Slotmeer and Bijlmer-Centrum that can accomodate 2-6 people and to provide real beds.
+
+Even though Zuid is a highly profitable and popular neighborhood, there is a high concentrated amount of listings that will drive the supply up and the demand down, resulting in lower bookings in the future. Also, outliers such as varying property types that produce high income may result from different factors out of our control, like views, services, amenities, architecture, etc. Those two neighborhoods are the best options from the data analyzed. 
 
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
