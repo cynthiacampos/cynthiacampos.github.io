@@ -14,18 +14,20 @@
       --bg2:          #111827;
       --bg3:          #1a2235;
       --border:       rgba(255,255,255,0.07);
-      --accent:       #4fc3f7;
-      --accent2:      #7c3aed;
-      --accent-glow:  rgba(79,195,247,0.15);
-      --green:        #34d399;
-      --orange:       #fb923c;
-      --yellow:       #fbbf24;
+      --accent:       #63b3ed;
+      --accent2:      #4fd1c7;
+      --accent3:      #76e4f7;
+      --accent4:      #b794f4;
+      --accent-glow:  rgba(99,179,237,0.15);
+      --green:        #4fd1c7;
+      --orange:       #f6ad55;
+      --yellow:       #76e4f7;
       --text:         #e8edf5;
       --text-muted:   #8899aa;
       --text-dim:     #4a5568;
       --card:         #131d2e;
-      --tag-bg:       rgba(79,195,247,0.1);
-      --tag-color:    #4fc3f7;
+      --tag-bg:       rgba(99,179,237,0.08);
+      --tag-color:    #63b3ed;
       --sql-bg:       #080c14;
     }
 
@@ -44,8 +46,8 @@
       content: '';
       position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(79,195,247,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79,195,247,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(99,179,237,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,179,237,0.03) 1px, transparent 1px);
       background-size: 60px 60px;
       pointer-events: none;
       z-index: 0;
@@ -92,9 +94,9 @@
     .nav-badge {
       font-family: 'DM Mono', monospace;
       font-size: 0.68rem;
-      color: var(--green);
-      background: rgba(52,211,153,0.08);
-      border: 1px solid rgba(52,211,153,0.2);
+      color: var(--accent2);
+      background: rgba(79,209,199,0.08);
+      border: 1px solid rgba(79,209,199,0.2);
       padding: 0.25rem 0.7rem;
       border-radius: 2rem;
       display: flex; align-items: center; gap: 0.4rem;
@@ -102,7 +104,7 @@
 
     .status-dot {
       width: 5px; height: 5px;
-      background: var(--green);
+      background: var(--accent2);
       border-radius: 50%;
       animation: pulse 2s infinite;
     }
@@ -174,7 +176,7 @@
       font-size: 0.7rem;
       color: var(--tag-color);
       background: var(--tag-bg);
-      border: 1px solid rgba(79,195,247,0.15);
+      border: 1px solid rgba(99,179,237,0.15);
       padding: 0.25rem 0.65rem;
       border-radius: 4px;
       letter-spacing: 0.05em;
@@ -217,11 +219,11 @@
       animation: fadeUp 0.5s ease both;
     }
 
-    .kpi-card:nth-child(1){ animation-delay:0.05s; border-top:2px solid var(--accent); }
-    .kpi-card:nth-child(2){ animation-delay:0.10s; border-top:2px solid var(--green); }
-    .kpi-card:nth-child(3){ animation-delay:0.15s; border-top:2px solid var(--yellow); }
-    .kpi-card:nth-child(4){ animation-delay:0.20s; border-top:2px solid var(--accent2); }
-    .kpi-card:nth-child(5){ animation-delay:0.25s; border-top:2px solid var(--orange); }
+    .kpi-card:nth-child(1){ animation-delay:0.05s; border-top:2px solid #63b3ed; }
+    .kpi-card:nth-child(2){ animation-delay:0.10s; border-top:2px solid #4fd1c7; }
+    .kpi-card:nth-child(3){ animation-delay:0.15s; border-top:2px solid #76e4f7; }
+    .kpi-card:nth-child(4){ animation-delay:0.20s; border-top:2px solid #b794f4; }
+    .kpi-card:nth-child(5){ animation-delay:0.25s; border-top:2px solid #f6ad55; }
 
     .kpi-label {
       font-family: 'DM Mono', monospace;
@@ -239,11 +241,11 @@
       letter-spacing: -0.02em;
     }
 
-    .kpi-card:nth-child(1) .kpi-value { color: var(--accent); }
-    .kpi-card:nth-child(2) .kpi-value { color: var(--green); }
-    .kpi-card:nth-child(3) .kpi-value { color: var(--yellow); }
-    .kpi-card:nth-child(4) .kpi-value { color: var(--accent2); }
-    .kpi-card:nth-child(5) .kpi-value { color: var(--orange); }
+    .kpi-card:nth-child(1) .kpi-value { color: #63b3ed; }
+    .kpi-card:nth-child(2) .kpi-value { color: #4fd1c7; }
+    .kpi-card:nth-child(3) .kpi-value { color: #76e4f7; }
+    .kpi-card:nth-child(4) .kpi-value { color: #b794f4; }
+    .kpi-card:nth-child(5) .kpi-value { color: #f6ad55; }
 
     .kpi-sub {
       font-family: 'DM Mono', monospace;
@@ -327,7 +329,7 @@
     .sql-panel {
       display: none;
       background: var(--sql-bg);
-      border: 1px solid rgba(79,195,247,0.12);
+      border: 1px solid rgba(99,179,237,0.12);
       border-radius: 7px;
       padding: 14px;
       margin-bottom: 14px;
@@ -341,7 +343,6 @@
       text-transform: uppercase;
       letter-spacing: 0.12em;
       color: var(--accent);
-      opacity: 0.6;
       margin-bottom: 8px;
     }
 
@@ -392,13 +393,13 @@
       font-size: 0.65rem;
     }
 
-    .r1 { background:rgba(251,191,36,0.12); color:#fbbf24; }
-    .r2 { background:rgba(148,163,184,0.1);  color:#94a3b8; }
-    .r3 { background:rgba(180,120,60,0.1);   color:#cd7f32; }
+    .r1 { background:rgba(99,179,237,0.15);  color:#63b3ed; }
+    .r2 { background:rgba(79,209,199,0.12);  color:#4fd1c7; }
+    .r3 { background:rgba(183,148,244,0.12); color:#b794f4; }
     .rn { background:rgba(74,85,104,0.08);   color:var(--text-dim); }
 
     .bar-wrap { display:flex; align-items:center; gap:7px; }
-    .bar-fill  { height:3px; background:var(--accent); border-radius:2px; opacity:0.55; }
+    .bar-fill  { height:3px; background:var(--accent2); border-radius:2px; opacity:0.65; }
 
     /* ── Footer ── */
     .dash-footer {
@@ -679,10 +680,10 @@
           <th>#</th><th>Rep</th><th>Region</th><th>Revenue</th><th>Margin</th><th>Orders</th>
         </tr></thead>
         <tbody>
-          <tr><td><span class="rank-badge r1">1</span></td><td><strong>Kevin Wright</strong></td><td style="color:var(--text-muted)">South</td><td style="color:var(--accent);font-family:'DM Mono',monospace">$35,375</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">16</td></tr>
-          <tr><td><span class="rank-badge r2">2</span></td><td><strong>Marcus Lee</strong></td><td style="color:var(--text-muted)">West</td><td style="color:var(--accent);font-family:'DM Mono',monospace">$23,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:53px"></div><span>21.2%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">21</td></tr>
-          <tr><td><span class="rank-badge r3">3</span></td><td><strong>Sarah Johnson</strong></td><td style="color:var(--text-muted)">East</td><td style="color:var(--accent);font-family:'DM Mono',monospace">$14,520</td><td><div class="bar-wrap"><div class="bar-fill" style="width:55px"></div><span>22.2%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">9</td></tr>
-          <tr><td><span class="rank-badge rn">4</span></td><td><strong>Diana Torres</strong></td><td style="color:var(--text-muted)">Central</td><td style="color:var(--accent);font-family:'DM Mono',monospace">$13,254</td><td><div class="bar-wrap"><div class="bar-fill" style="width:48px"></div><span>19.4%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">11</td></tr>
+          <tr><td><span class="rank-badge r1">1</span></td><td><strong>Kevin Wright</strong></td><td style="color:var(--text-muted)">South</td><td style="color:#63b3ed;font-family:'DM Mono',monospace">$35,375</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">16</td></tr>
+          <tr><td><span class="rank-badge r2">2</span></td><td><strong>Marcus Lee</strong></td><td style="color:var(--text-muted)">West</td><td style="color:#63b3ed;font-family:'DM Mono',monospace">$23,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:53px"></div><span>21.2%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">21</td></tr>
+          <tr><td><span class="rank-badge r3">3</span></td><td><strong>Sarah Johnson</strong></td><td style="color:var(--text-muted)">East</td><td style="color:#63b3ed;font-family:'DM Mono',monospace">$14,520</td><td><div class="bar-wrap"><div class="bar-fill" style="width:55px"></div><span>22.2%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">9</td></tr>
+          <tr><td><span class="rank-badge rn">4</span></td><td><strong>Diana Torres</strong></td><td style="color:var(--text-muted)">Central</td><td style="color:#63b3ed;font-family:'DM Mono',monospace">$13,254</td><td><div class="bar-wrap"><div class="bar-fill" style="width:48px"></div><span>19.4%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">11</td></tr>
         </tbody>
       </table>
     </div>
@@ -721,14 +722,14 @@
           <th>#</th><th>Product</th><th>Category</th><th>Revenue</th><th>Margin</th>
         </tr></thead>
         <tbody>
-          <tr><td><span class="rank-badge r1">1</span></td><td>MacBook Pro 16"</td><td style="color:var(--text-muted)">Technology</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$35,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td></tr>
-          <tr><td><span class="rank-badge r2">2</span></td><td>Dell Monitor 27"</td><td style="color:var(--text-muted)">Technology</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$11,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:73px"></div><span>29.4%</span></div></td></tr>
-          <tr><td><span class="rank-badge r3">3</span></td><td>Canon EOS Camera</td><td style="color:var(--text-muted)">Technology</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$9,500</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td></tr>
-          <tr><td><span class="rank-badge rn">4</span></td><td>Conference Table</td><td style="color:var(--text-muted)">Furniture</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$9,000</td><td><div class="bar-wrap"><div class="bar-fill" style="width:43px"></div><span>17.2%</span></div></td></tr>
-          <tr><td><span class="rank-badge rn">5</span></td><td>Ergonomic Chair</td><td style="color:var(--text-muted)">Furniture</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$5,730</td><td><div class="bar-wrap"><div class="bar-fill" style="width:46px"></div><span>18.4%</span></div></td></tr>
-          <tr><td><span class="rank-badge rn">6</span></td><td>Standing Desk</td><td style="color:var(--text-muted)">Furniture</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$5,490</td><td><div class="bar-wrap"><div class="bar-fill" style="width:49px"></div><span>19.5%</span></div></td></tr>
-          <tr><td><span class="rank-badge rn">7</span></td><td>Bookcases Oak</td><td style="color:var(--text-muted)">Furniture</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$3,630</td><td><div class="bar-wrap"><div class="bar-fill" style="width:30px"></div><span>11.8%</span></div></td></tr>
-          <tr><td><span class="rank-badge rn">8</span></td><td>HP LaserJet Printer</td><td style="color:var(--text-muted)">Technology</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$3,180</td><td><div class="bar-wrap"><div class="bar-fill" style="width:37px"></div><span>14.9%</span></div></td></tr>
+          <tr><td><span class="rank-badge r1">1</span></td><td>MacBook Pro 16"</td><td style="color:var(--text-muted)">Technology</td><td style="color:#4fd1c7;font-family:'DM Mono',monospace">$35,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td></tr>
+          <tr><td><span class="rank-badge r2">2</span></td><td>Dell Monitor 27"</td><td style="color:var(--text-muted)">Technology</td><td style="color:#4fd1c7;font-family:'DM Mono',monospace">$11,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:73px"></div><span>29.4%</span></div></td></tr>
+          <tr><td><span class="rank-badge r3">3</span></td><td>Canon EOS Camera</td><td style="color:var(--text-muted)">Technology</td><td style="color:#4fd1c7;font-family:'DM Mono',monospace">$9,500</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">4</span></td><td>Conference Table</td><td style="color:var(--text-muted)">Furniture</td><td style="color:#4fd1c7;font-family:'DM Mono',monospace">$9,000</td><td><div class="bar-wrap"><div class="bar-fill" style="width:43px"></div><span>17.2%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">5</span></td><td>Ergonomic Chair</td><td style="color:var(--text-muted)">Furniture</td><td style="color:#4fd1c7;font-family:'DM Mono',monospace">$5,730</td><td><div class="bar-wrap"><div class="bar-fill" style="width:46px"></div><span>18.4%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">6</span></td><td>Standing Desk</td><td style="color:var(--text-muted)">Furniture</td><td style="color:#4fd1c7;font-family:'DM Mono',monospace">$5,490</td><td><div class="bar-wrap"><div class="bar-fill" style="width:49px"></div><span>19.5%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">7</span></td><td>Bookcases Oak</td><td style="color:var(--text-muted)">Furniture</td><td style="color:#4fd1c7;font-family:'DM Mono',monospace">$3,630</td><td><div class="bar-wrap"><div class="bar-fill" style="width:30px"></div><span>11.8%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">8</span></td><td>HP LaserJet Printer</td><td style="color:var(--text-muted)">Technology</td><td style="color:#4fd1c7;font-family:'DM Mono',monospace">$3,180</td><td><div class="bar-wrap"><div class="bar-fill" style="width:37px"></div><span>14.9%</span></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -749,11 +750,11 @@
   Chart.defaults.font.size = 10;
 
   const C = {
-    accent:  '#4fc3f7',
-    accent2: '#7c3aed',
-    green:   '#34d399',
-    orange:  '#fb923c',
-    yellow:  '#fbbf24',
+    accent:  '#63b3ed',
+    accent2: '#4fd1c7',
+    accent3: '#76e4f7',
+    accent4: '#b794f4',
+    orange:  '#f6ad55',
     muted:   '#4a5568',
     border:  'rgba(255,255,255,0.05)',
   };
@@ -796,7 +797,7 @@
           label: '2024',
           data: [4450,1605,2950,5092,3250,4540,2440,5370,1942,5200,3860,5745],
           borderColor: C.accent,
-          backgroundColor: 'rgba(79,195,247,0.05)',
+          backgroundColor: 'rgba(99,179,237,0.05)',
           fill: true,
           borderWidth: 2,
           pointRadius: 4,
@@ -828,7 +829,7 @@
       labels: ['Technology','Furniture','Office Supplies'],
       datasets: [{
         data: [62080, 23850, 819],
-        backgroundColor: [C.accent, C.accent2, C.green],
+        backgroundColor: [C.accent, C.accent4, C.accent2],
         borderColor: '#131d2e',
         borderWidth: 3,
         hoverOffset: 6,
@@ -850,8 +851,8 @@
     data: {
       labels: ['South','West','East','Central'],
       datasets: [
-        { label: 'Revenue', data: [35375,23600,14520,13254], backgroundColor: 'rgba(79,195,247,0.65)', borderRadius: 4 },
-        { label: 'Profit',  data: [7069,5007,3223,2569],    backgroundColor: 'rgba(52,211,153,0.65)',  borderRadius: 4 },
+        { label: 'Revenue', data: [35375,23600,14520,13254], backgroundColor: 'rgba(99,179,237,0.65)',  borderRadius: 4 },
+        { label: 'Profit',  data: [7069,5007,3223,2569],    backgroundColor: 'rgba(79,209,199,0.65)',   borderRadius: 4 },
       ]
     },
     options: {
@@ -875,7 +876,7 @@
       datasets: [{
         label: 'Revenue',
         data: [60619, 17515, 8615],
-        backgroundColor: [C.accent, C.orange, C.yellow],
+        backgroundColor: [C.accent, C.accent4, C.orange],
         borderRadius: 4,
       }]
     },
@@ -908,7 +909,7 @@
       datasets: [{
         label: 'Margin %',
         data: [20.8, 19.3, 10.7],
-        backgroundColor: ['rgba(52,211,153,0.7)', 'rgba(79,195,247,0.7)', 'rgba(251,146,60,0.7)'],
+        backgroundColor: ['rgba(79,209,199,0.7)', 'rgba(99,179,237,0.7)', 'rgba(246,173,85,0.7)'],
         borderRadius: 4,
       }]
     },
