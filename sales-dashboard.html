@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Intelligence Dashboard | Cynthia Campos</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0b0f1a;
+      --bg2:          #111827;
+      --bg3:          #1a2235;
+      --border:       rgba(255,255,255,0.07);
+      --accent:       #4fc3f7;
+      --accent2:      #7c3aed;
+      --accent-glow:  rgba(79,195,247,0.15);
+      --green:        #34d399;
+      --orange:       #fb923c;
+      --yellow:       #fbbf24;
+      --text:         #e8edf5;
+      --text-muted:   #8899aa;
+      --text-dim:     #4a5568;
+      --card:         #131d2e;
+      --tag-bg:       rgba(79,195,247,0.1);
+      --tag-color:    #4fc3f7;
+      --sql-bg:       #080c14;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Grid BG ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(79,195,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,195,247,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 3rem;
+      background: rgba(11,15,26,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-left {
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+
+    .nav-back {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 0.4rem;
+      transition: color 0.2s;
+    }
+
+    .nav-back:hover { color: var(--accent); }
+
+    .nav-divider {
+      width: 1px; height: 16px;
+      background: var(--border);
+    }
+
+    .nav-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+
+    .nav-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--green);
+      background: rgba(52,211,153,0.08);
+      border: 1px solid rgba(52,211,153,0.2);
+      padding: 0.25rem 0.7rem;
+      border-radius: 2rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+
+    .status-dot {
+      width: 5px; height: 5px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── Page ── */
+    .page {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 100px 3rem 60px;
+      position: relative; z-index: 1;
+    }
+
+    /* ── Hero Header ── */
+    .dash-header {
+      margin-bottom: 48px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .dash-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+
+    .dash-eyebrow::before {
+      content: '//';
+      opacity: 0.4;
+    }
+
+    .dash-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+
+    .dash-header h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .dash-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 600px;
+      line-height: 1.7;
+    }
+
+    .tech-tags {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+
+    .tech-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--tag-color);
+      background: var(--tag-bg);
+      border: 1px solid rgba(79,195,247,0.15);
+      padding: 0.25rem 0.65rem;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Section Label ── */
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1; height: 1px;
+      background: var(--border);
+    }
+
+    /* ── KPI Grid ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .kpi-card:nth-child(1){ animation-delay:0.05s; border-top:2px solid var(--accent); }
+    .kpi-card:nth-child(2){ animation-delay:0.10s; border-top:2px solid var(--green); }
+    .kpi-card:nth-child(3){ animation-delay:0.15s; border-top:2px solid var(--yellow); }
+    .kpi-card:nth-child(4){ animation-delay:0.20s; border-top:2px solid var(--accent2); }
+    .kpi-card:nth-child(5){ animation-delay:0.25s; border-top:2px solid var(--orange); }
+
+    .kpi-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .kpi-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.9rem;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-card:nth-child(1) .kpi-value { color: var(--accent); }
+    .kpi-card:nth-child(2) .kpi-value { color: var(--green); }
+    .kpi-card:nth-child(3) .kpi-value { color: var(--yellow); }
+    .kpi-card:nth-child(4) .kpi-value { color: var(--accent2); }
+    .kpi-card:nth-child(5) .kpi-value { color: var(--orange); }
+
+    .kpi-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    /* ── Chart Cards ── */
+    .charts-2col { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .charts-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .charts-2eq  { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 48px; }
+
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .chart-card:nth-child(1){ animation-delay:0.3s; }
+    .chart-card:nth-child(2){ animation-delay:0.38s; }
+    .chart-card:nth-child(3){ animation-delay:0.34s; }
+    .chart-card:nth-child(4){ animation-delay:0.42s; }
+    .chart-card:nth-child(5){ animation-delay:0.46s; }
+
+    .card-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 18px; gap: 12px;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .card-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    .endpoint {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--accent);
+      background: var(--tag-bg);
+      border: 1px solid rgba(79,195,247,0.15);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    /* ── SQL Toggle ── */
+    .sql-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .sql-btn:hover, .sql-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--tag-bg);
+    }
+
+    /* ── SQL Panel ── */
+    .sql-panel {
+      display: none;
+      background: var(--sql-bg);
+      border: 1px solid rgba(79,195,247,0.12);
+      border-radius: 7px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .sql-panel.open { display: block; }
+
+    .sql-panel-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      opacity: 0.6;
+      margin-bottom: 8px;
+    }
+
+    .sql-panel pre {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: #7ecfaa;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.75;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    pre .kw  { color: #60a5fa; }
+    pre .fn  { color: #fbbf24; }
+    pre .str { color: #a3e635; }
+    pre .cm  { color: #374151; }
+
+    /* ── Tables ── */
+    .data-table { width:100%; border-collapse:collapse; font-size:0.78rem; }
+
+    .data-table th {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table td {
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--text);
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(79,195,247,0.02); }
+
+    .rank-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 5px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+    }
+
+    .r1 { background:rgba(251,191,36,0.12); color:#fbbf24; }
+    .r2 { background:rgba(148,163,184,0.1);  color:#94a3b8; }
+    .r3 { background:rgba(180,120,60,0.1);   color:#cd7f32; }
+    .rn { background:rgba(74,85,104,0.08);   color:var(--text-dim); }
+
+    .bar-wrap { display:flex; align-items:center; gap:7px; }
+    .bar-fill  { height:3px; background:var(--accent); border-radius:2px; opacity:0.55; }
+
+    /* ── Footer ── */
+    .dash-footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+
+    .dash-footer p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+    }
+
+    .dash-footer a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .dash-footer a:hover { opacity: 0.75; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-left">
+    <a href="https://cynthiacampos.github.io" class="nav-back">← Portfolio</a>
+    <div class="nav-divider"></div>
+    <span class="nav-title">Sales Intelligence Dashboard</span>
+  </div>
+  <div class="nav-badge">
+    <span class="status-dot"></span>
+    Static · GitHub Pages
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="dash-header">
+    <div class="dash-eyebrow">Project 01 — Full-Stack BI</div>
+    <h1>Sales <em>Intelligence</em> Dashboard</h1>
+    <p>
+      End-to-end BI project built on a normalized SQLite schema, powered by 10 analytical SQL queries
+      featuring CTEs, window functions, and YoY analysis — visualized with Chart.js.
+    </p>
+    <div class="tech-tags">
+      <span class="tech-tag">SQL</span>
+      <span class="tech-tag">SQLite</span>
+      <span class="tech-tag">Node.js</span>
+      <span class="tech-tag">Express</span>
+      <span class="tech-tag">JavaScript</span>
+      <span class="tech-tag">Chart.js</span>
+      <span class="tech-tag">Window Functions</span>
+      <span class="tech-tag">CTEs</span>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="section-label">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value">$86.7k</div>
+      <div class="kpi-sub">2023 – 2024</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Profit</div>
+      <div class="kpi-value">$17.9k</div>
+      <div class="kpi-sub">All orders</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Profit Margin</div>
+      <div class="kpi-value">20.6%</div>
+      <div class="kpi-sub">Blended avg</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Orders</div>
+      <div class="kpi-value">57</div>
+      <div class="kpi-sub">2023 – 2024</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Customers</div>
+      <div class="kpi-value">15</div>
+      <div class="kpi-sub">Unique</div>
+    </div>
+  </div>
+
+  <!-- Row 1: Monthly + Category -->
+  <div class="charts-2col">
+
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Monthly Revenue — Year over Year</div>
+          <div class="card-sub">2023 vs 2024 &nbsp;·&nbsp; <span class="endpoint">CTE + conditional aggregation</span></div>
+        </div>
+        <button class="sql-btn" onclick="toggleSQL(this,'sq1')">{ SQL }</button>
+      </div>
+      <div class="sql-panel" id="sq1">
+        <div class="sql-panel-label">▸ Query powering this chart</div>
+        <pre><span class="kw">WITH</span> monthly <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    strftime(<span class="str">'%Y'</span>, o.order_date)  <span class="kw">AS</span> yr,
+    strftime(<span class="str">'%m'</span>, o.order_date)  <span class="kw">AS</span> mo,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.sales), 2)       <span class="kw">AS</span> revenue
+  <span class="kw">FROM</span> orders o
+  <span class="kw">JOIN</span> order_items oi <span class="kw">ON</span> o.order_id = oi.order_id
+  <span class="kw">GROUP BY</span> yr, mo
+)
+<span class="kw">SELECT</span>
+  mo <span class="kw">AS</span> month,
+  <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> yr = <span class="str">'2023'</span> <span class="kw">THEN</span> revenue <span class="kw">END</span>) <span class="kw">AS</span> revenue_2023,
+  <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> yr = <span class="str">'2024'</span> <span class="kw">THEN</span> revenue <span class="kw">END</span>) <span class="kw">AS</span> revenue_2024
+<span class="kw">FROM</span> monthly
+<span class="kw">GROUP BY</span> mo <span class="kw">ORDER BY</span> mo</pre>
+      </div>
+      <canvas id="monthlyChart" height="85"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Revenue by Category</div>
+          <div class="card-sub"><span class="endpoint">Aggregation + JOIN</span></div>
+        </div>
+        <button class="sql-btn" onclick="toggleSQL(this,'sq2')">{ SQL }</button>
+      </div>
+      <div class="sql-panel" id="sq2">
+        <div class="sql-panel-label">▸ Query powering this chart</div>
+        <pre><span class="kw">SELECT</span>
+  p.category,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.sales), 2)   <span class="kw">AS</span> revenue,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.profit), 2)  <span class="kw">AS</span> profit,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.profit) /
+    <span class="fn">SUM</span>(oi.sales) * 100, 1) <span class="kw">AS</span> margin_pct
+<span class="kw">FROM</span> order_items oi
+<span class="kw">JOIN</span> products p
+  <span class="kw">ON</span> oi.product_id = p.product_id
+<span class="kw">GROUP BY</span> p.category
+<span class="kw">ORDER BY</span> revenue <span class="kw">DESC</span></pre>
+      </div>
+      <canvas id="categoryChart" height="155"></canvas>
+    </div>
+
+  </div>
+
+  <!-- Row 2: Region + Segments + Discounts -->
+  <div class="charts-3col">
+
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Revenue by Region</div>
+          <div class="card-sub"><span class="endpoint">Multi-table JOIN</span></div>
+        </div>
+        <button class="sql-btn" onclick="toggleSQL(this,'sq3')">{ SQL }</button>
+      </div>
+      <div class="sql-panel" id="sq3">
+        <div class="sql-panel-label">▸ Query powering this chart</div>
+        <pre><span class="kw">SELECT</span>
+  c.region,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.sales), 2)  <span class="kw">AS</span> revenue,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.profit), 2) <span class="kw">AS</span> profit,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.profit) /
+    <span class="fn">SUM</span>(oi.sales) * 100, 1)
+                           <span class="kw">AS</span> margin_pct
+<span class="kw">FROM</span> orders o
+<span class="kw">JOIN</span> order_items oi
+  <span class="kw">ON</span> o.order_id = oi.order_id
+<span class="kw">JOIN</span> customers c
+  <span class="kw">ON</span> o.customer_id = c.customer_id
+<span class="kw">GROUP BY</span> c.region
+<span class="kw">ORDER BY</span> revenue <span class="kw">DESC</span></pre>
+      </div>
+      <canvas id="regionChart" height="158"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Customer Segments</div>
+          <div class="card-sub"><span class="endpoint">Avg order value</span></div>
+        </div>
+        <button class="sql-btn" onclick="toggleSQL(this,'sq4')">{ SQL }</button>
+      </div>
+      <div class="sql-panel" id="sq4">
+        <div class="sql-panel-label">▸ Query powering this chart</div>
+        <pre><span class="kw">SELECT</span>
+  c.segment,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> o.order_id)  <span class="kw">AS</span> orders,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.sales), 2)      <span class="kw">AS</span> revenue,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.profit) /
+    <span class="fn">SUM</span>(oi.sales) * 100, 1)    <span class="kw">AS</span> margin_pct,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.sales) /
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> o.order_id),
+    2)                         <span class="kw">AS</span> avg_order_value
+<span class="kw">FROM</span> orders o
+<span class="kw">JOIN</span> order_items oi
+  <span class="kw">ON</span> o.order_id = oi.order_id
+<span class="kw">JOIN</span> customers c
+  <span class="kw">ON</span> o.customer_id = c.customer_id
+<span class="kw">GROUP BY</span> c.segment</pre>
+      </div>
+      <canvas id="segmentChart" height="158"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Discount Impact on Margin</div>
+          <div class="card-sub"><span class="endpoint">CASE bucketing</span></div>
+        </div>
+        <button class="sql-btn" onclick="toggleSQL(this,'sq5')">{ SQL }</button>
+      </div>
+      <div class="sql-panel" id="sq5">
+        <div class="sql-panel-label">▸ Query powering this chart</div>
+        <pre><span class="kw">SELECT</span>
+  <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> discount = 0      <span class="kw">THEN</span> <span class="str">'No Discount'</span>
+    <span class="kw">WHEN</span> discount &lt;= 0.10  <span class="kw">THEN</span> <span class="str">'1–10%'</span>
+    <span class="kw">WHEN</span> discount &lt;= 0.20  <span class="kw">THEN</span> <span class="str">'11–20%'</span>
+    <span class="kw">ELSE</span>                         <span class="str">'20%+'</span>
+  <span class="kw">END</span>                    <span class="kw">AS</span> discount_tier,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(profit) /
+    <span class="fn">SUM</span>(sales) * 100, 1) <span class="kw">AS</span> margin_pct
+<span class="kw">FROM</span> order_items
+<span class="kw">GROUP BY</span> discount_tier</pre>
+      </div>
+      <canvas id="discountChart" height="158"></canvas>
+    </div>
+
+  </div>
+
+  <!-- Row 3: Rep Leaderboard + Top Products -->
+  <div class="charts-2eq">
+
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Sales Rep Leaderboard</div>
+          <div class="card-sub"><span class="endpoint">RANK() OVER window function</span></div>
+        </div>
+        <button class="sql-btn" onclick="toggleSQL(this,'sq6')">{ SQL }</button>
+      </div>
+      <div class="sql-panel" id="sq6">
+        <div class="sql-panel-label">▸ Query powering this table</div>
+        <pre><span class="kw">WITH</span> rep_totals <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    sr.rep_name, sr.region,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.sales), 2)  <span class="kw">AS</span> revenue,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.profit) /
+      <span class="fn">SUM</span>(oi.sales)*100, 1)  <span class="kw">AS</span> margin_pct,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span>
+      o.order_id)            <span class="kw">AS</span> total_orders
+  <span class="kw">FROM</span> orders o
+  <span class="kw">JOIN</span> order_items oi <span class="kw">ON</span> o.order_id=oi.order_id
+  <span class="kw">JOIN</span> sales_reps sr  <span class="kw">ON</span> o.rep_id=sr.rep_id
+  <span class="kw">GROUP BY</span> sr.rep_id
+)
+<span class="kw">SELECT</span>
+  <span class="fn">RANK</span>() <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> revenue <span class="kw">DESC</span>) <span class="kw">AS</span> rank,
+  rep_name, region, revenue,
+  margin_pct, total_orders
+<span class="kw">FROM</span> rep_totals <span class="kw">ORDER BY</span> rank</pre>
+      </div>
+      <table class="data-table">
+        <thead><tr>
+          <th>#</th><th>Rep</th><th>Region</th><th>Revenue</th><th>Margin</th><th>Orders</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span class="rank-badge r1">1</span></td><td><strong>Kevin Wright</strong></td><td style="color:var(--text-muted)">South</td><td style="color:var(--accent);font-family:'DM Mono',monospace">$35,375</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">16</td></tr>
+          <tr><td><span class="rank-badge r2">2</span></td><td><strong>Marcus Lee</strong></td><td style="color:var(--text-muted)">West</td><td style="color:var(--accent);font-family:'DM Mono',monospace">$23,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:53px"></div><span>21.2%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">21</td></tr>
+          <tr><td><span class="rank-badge r3">3</span></td><td><strong>Sarah Johnson</strong></td><td style="color:var(--text-muted)">East</td><td style="color:var(--accent);font-family:'DM Mono',monospace">$14,520</td><td><div class="bar-wrap"><div class="bar-fill" style="width:55px"></div><span>22.2%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">9</td></tr>
+          <tr><td><span class="rank-badge rn">4</span></td><td><strong>Diana Torres</strong></td><td style="color:var(--text-muted)">Central</td><td style="color:var(--accent);font-family:'DM Mono',monospace">$13,254</td><td><div class="bar-wrap"><div class="bar-fill" style="width:48px"></div><span>19.4%</span></div></td><td style="font-family:'DM Mono',monospace;color:var(--text-dim)">11</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top Products by Revenue</div>
+          <div class="card-sub"><span class="endpoint">CTE + RANK() window function</span></div>
+        </div>
+        <button class="sql-btn" onclick="toggleSQL(this,'sq7')">{ SQL }</button>
+      </div>
+      <div class="sql-panel" id="sq7">
+        <div class="sql-panel-label">▸ Query powering this table</div>
+        <pre><span class="kw">WITH</span> product_totals <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    p.product_name, p.category,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.sales), 2)    <span class="kw">AS</span> revenue,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(oi.profit) /
+      <span class="fn">SUM</span>(oi.sales)*100, 1)    <span class="kw">AS</span> margin_pct
+  <span class="kw">FROM</span> order_items oi
+  <span class="kw">JOIN</span> products p
+    <span class="kw">ON</span> oi.product_id = p.product_id
+  <span class="kw">GROUP BY</span> p.product_id
+)
+<span class="kw">SELECT</span>
+  <span class="fn">RANK</span>() <span class="kw">OVER</span>
+    (<span class="kw">ORDER BY</span> revenue <span class="kw">DESC</span>) <span class="kw">AS</span> rank,
+  product_name, category,
+  revenue, margin_pct
+<span class="kw">FROM</span> product_totals
+<span class="kw">ORDER BY</span> rank <span class="kw">LIMIT</span> 8</pre>
+      </div>
+      <table class="data-table">
+        <thead><tr>
+          <th>#</th><th>Product</th><th>Category</th><th>Revenue</th><th>Margin</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span class="rank-badge r1">1</span></td><td>MacBook Pro 16"</td><td style="color:var(--text-muted)">Technology</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$35,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td></tr>
+          <tr><td><span class="rank-badge r2">2</span></td><td>Dell Monitor 27"</td><td style="color:var(--text-muted)">Technology</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$11,600</td><td><div class="bar-wrap"><div class="bar-fill" style="width:73px"></div><span>29.4%</span></div></td></tr>
+          <tr><td><span class="rank-badge r3">3</span></td><td>Canon EOS Camera</td><td style="color:var(--text-muted)">Technology</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$9,500</td><td><div class="bar-wrap"><div class="bar-fill" style="width:50px"></div><span>20%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">4</span></td><td>Conference Table</td><td style="color:var(--text-muted)">Furniture</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$9,000</td><td><div class="bar-wrap"><div class="bar-fill" style="width:43px"></div><span>17.2%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">5</span></td><td>Ergonomic Chair</td><td style="color:var(--text-muted)">Furniture</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$5,730</td><td><div class="bar-wrap"><div class="bar-fill" style="width:46px"></div><span>18.4%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">6</span></td><td>Standing Desk</td><td style="color:var(--text-muted)">Furniture</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$5,490</td><td><div class="bar-wrap"><div class="bar-fill" style="width:49px"></div><span>19.5%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">7</span></td><td>Bookcases Oak</td><td style="color:var(--text-muted)">Furniture</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$3,630</td><td><div class="bar-wrap"><div class="bar-fill" style="width:30px"></div><span>11.8%</span></div></td></tr>
+          <tr><td><span class="rank-badge rn">8</span></td><td>HP LaserJet Printer</td><td style="color:var(--text-muted)">Technology</td><td style="color:var(--accent2);font-family:'DM Mono',monospace">$3,180</td><td><div class="bar-wrap"><div class="bar-fill" style="width:37px"></div><span>14.9%</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="dash-footer">
+    <p>Sales Intelligence Dashboard &nbsp;·&nbsp; SQL · Node.js · Express · Chart.js</p>
+    <p><a href="https://cynthiacampos.github.io">← Back to Portfolio</a> &nbsp;·&nbsp; <a href="https://github.com/cynthiacampos" target="_blank">GitHub ↗</a></p>
+  </div>
+
+</div>
+
+<script>
+  Chart.defaults.color = '#4a5568';
+  Chart.defaults.font.family = "'DM Mono', monospace";
+  Chart.defaults.font.size = 10;
+
+  const C = {
+    accent:  '#4fc3f7',
+    accent2: '#7c3aed',
+    green:   '#34d399',
+    orange:  '#fb923c',
+    yellow:  '#fbbf24',
+    muted:   '#4a5568',
+    border:  'rgba(255,255,255,0.05)',
+  };
+
+  const tip = {
+    backgroundColor: '#131d2e',
+    borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    padding: 10,
+  };
+
+  const fmt = v => '$' + Number(v).toLocaleString('en-US');
+  const fmtK = v => v >= 1000 ? '$' + (v/1000).toFixed(1) + 'k' : '$' + v;
+
+  function toggleSQL(btn, id) {
+    const p = document.getElementById(id);
+    const open = p.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    btn.textContent = open ? '{ hide }' : '{ SQL }';
+  }
+
+  // ── Monthly YoY ──
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'line',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets: [
+        {
+          label: '2023',
+          data: [5465,913,1990,1982,2065,4190,1480,2115,3300,6490,2285,8030],
+          borderColor: C.muted,
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderDash: [4,3],
+          pointRadius: 3,
+          pointBackgroundColor: C.muted,
+          tension: 0.4,
+        },
+        {
+          label: '2024',
+          data: [4450,1605,2950,5092,3250,4540,2440,5370,1942,5200,3860,5745],
+          borderColor: C.accent,
+          backgroundColor: 'rgba(79,195,247,0.05)',
+          fill: true,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: C.accent,
+          pointBorderColor: '#0b0f1a',
+          pointBorderWidth: 2,
+          tension: 0.4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 10, padding: 16 } },
+        tooltip: { ...tip, callbacks: { label: c => ' ' + c.dataset.label + ': ' + fmt(c.raw) } }
+      },
+      scales: {
+        x: { grid: { color: C.border }, ticks: { color: C.muted } },
+        y: { grid: { color: C.border }, ticks: { color: C.muted, callback: fmtK } }
+      }
+    }
+  });
+
+  // ── Category Donut ──
+  new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Technology','Furniture','Office Supplies'],
+      datasets: [{
+        data: [62080, 23850, 819],
+        backgroundColor: [C.accent, C.accent2, C.green],
+        borderColor: '#131d2e',
+        borderWidth: 3,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '68%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 14, boxWidth: 10 } },
+        tooltip: { ...tip, callbacks: { label: c => ' ' + c.label + ': ' + fmt(c.raw) } }
+      }
+    }
+  });
+
+  // ── Region Bar ──
+  new Chart(document.getElementById('regionChart'), {
+    type: 'bar',
+    data: {
+      labels: ['South','West','East','Central'],
+      datasets: [
+        { label: 'Revenue', data: [35375,23600,14520,13254], backgroundColor: 'rgba(79,195,247,0.65)', borderRadius: 4 },
+        { label: 'Profit',  data: [7069,5007,3223,2569],    backgroundColor: 'rgba(52,211,153,0.65)',  borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 10, padding: 12 } },
+        tooltip: { ...tip, callbacks: { label: c => ' ' + c.dataset.label + ': ' + fmt(c.raw) } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: C.muted } },
+        y: { grid: { color: C.border }, ticks: { color: C.muted, callback: fmtK } }
+      }
+    }
+  });
+
+  // ── Segment Bar ──
+  new Chart(document.getElementById('segmentChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Corporate','Consumer','Home Office'],
+      datasets: [{
+        label: 'Revenue',
+        data: [60619, 17515, 8615],
+        backgroundColor: [C.accent, C.orange, C.yellow],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...tip,
+          callbacks: {
+            label: c => {
+              const aov = [1894, 1168, 862][c.dataIndex];
+              return [' Revenue: ' + fmt(c.raw), ' Avg Order: $' + aov];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: C.muted } },
+        y: { grid: { color: C.border }, ticks: { color: C.muted, callback: fmtK } }
+      }
+    }
+  });
+
+  // ── Discount Impact ──
+  new Chart(document.getElementById('discountChart'), {
+    type: 'bar',
+    data: {
+      labels: ['No Discount','1–10%','11–20%'],
+      datasets: [{
+        label: 'Margin %',
+        data: [20.8, 19.3, 10.7],
+        backgroundColor: ['rgba(52,211,153,0.7)', 'rgba(79,195,247,0.7)', 'rgba(251,146,60,0.7)'],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...tip, callbacks: { label: c => ' Margin: ' + c.raw + '%' } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: C.muted } },
+        y: { grid: { color: C.border }, ticks: { color: C.muted, callback: v => v + '%' }, min: 0, max: 25 }
+      }
+    }
+  });
+</script>
+</body>
+</html>
