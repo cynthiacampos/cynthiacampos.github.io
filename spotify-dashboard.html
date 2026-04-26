@@ -1151,18 +1151,63 @@
     loadDashboard(term);
   }
 
-  // ── Boot ─────────────────────────────────────────────────
-  window.addEventListener('load', () => {
-    accessToken = getTokenFromHash();
+  // ── Term Switcher ────────────────────────────────────────
+  function switchTerm(term, btn) {
+    currentTerm = term;
+    document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    loadDashboard(term);
+  }
 
-    if (accessToken) {
-      // Clean URL
-      history.replaceState(null, '', window.location.pathname);
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      loadDashboard(currentTerm);
+  // ── Boot ─────────────────────────────────────────────────
+  window.addEventListener('load', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code      = urlParams.get('code');
+    const error     = urlParams.get('error');
+
+    // Spotify returned an error (e.g. user denied)
+    if (error) {
+      document.getElementById('loginScreen').style.display = 'flex';
+      return;
     }
+
+    // Spotify returned a code — exchange it for a token
+    if (code) {
+      // Clean the URL immediately so refreshing doesn't re-use the code
+      history.replaceState(null, '', window.location.pathname);
+      try {
+        accessToken = await exchangeCode(code);
+        showDashboard();
+      } catch (err) {
+        // Show error on login screen
+        document.getElementById('loginScreen').style.display = 'flex';
+        const loginCard = document.querySelector('.login-card');
+        const errDiv = document.createElement('p');
+        errDiv.style.cssText = 'color:#f87171;font-family:DM Mono,monospace;font-size:0.7rem;margin-top:1rem;';
+        errDiv.textContent = '⚠ ' + err.message;
+        loginCard.appendChild(errDiv);
+        console.error('Token exchange error:', err);
+      }
+      return;
+    }
+
+    // Check for a valid stored token (handles page refresh)
+    const stored = getStoredToken();
+    if (stored) {
+      accessToken = stored;
+      showDashboard();
+      return;
+    }
+
+    // No token, no code — show login
+    document.getElementById('loginScreen').style.display = 'flex';
   });
+
+  function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadDashboard(currentTerm);
+  }
 </script>
 </body>
 </html>
