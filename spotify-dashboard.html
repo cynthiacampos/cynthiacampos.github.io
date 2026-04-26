@@ -717,7 +717,7 @@
       <div class="card-header">
         <div>
           <div class="card-title">Sonic Profile</div>
-          <div class="card-sub"><span class="api-tag">GET /audio-features</span></div>
+          <div class="card-sub">Derived from your top artist genres</div>
         </div>
       </div>
       <canvas id="radarChart" height="220"></canvas>
@@ -744,7 +744,7 @@
       <div class="card-header">
         <div>
           <div class="card-title">Audio Mood Profile</div>
-          <div class="card-sub">Avg across your top 20 tracks</div>
+          <div class="card-sub">Derived from your top 20 tracks metadata</div>
         </div>
       </div>
       <div class="mood-grid" id="moodGrid">
@@ -870,54 +870,6 @@
 
   const PALETTE = ['#1db954','#a855f7','#ec4899','#3b82f6','#f59e0b','#14b8a6','#f97316','#8b5cf6'];
 
-  // ── Radar Chart ──────────────────────────────────────────
-  function buildRadar(features) {
-    if (radarChartInst) radarChartInst.destroy();
-    const avg = k => Math.round((features.reduce((s,f) => s + (f[k]||0), 0) / features.length) * 100);
-
-    radarChartInst = new Chart(document.getElementById('radarChart'), {
-      type: 'radar',
-      data: {
-        labels: ['Energy','Danceability','Valence','Acousticness','Instrumentalness','Speechiness'],
-        datasets: [{
-          label: 'Your Sound',
-          data: [
-            avg('energy'), avg('danceability'), avg('valence'),
-            avg('acousticness'), avg('instrumentalness'), avg('speechiness')
-          ],
-          borderColor: '#1db954',
-          backgroundColor: 'rgba(29,185,84,0.12)',
-          pointBackgroundColor: '#1db954',
-          pointBorderColor: '#080810',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          borderWidth: 2,
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          r: {
-            min: 0, max: 100,
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            angleLines: { color: 'rgba(255,255,255,0.05)' },
-            pointLabels: { color: '#6b7280', font: { size: 10 } },
-            ticks: { display: false, stepSize: 25 },
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#12121f',
-            borderColor: 'rgba(255,255,255,0.06)',
-            borderWidth: 1,
-            callbacks: { label: c => ' ' + c.label + ': ' + c.raw + '%' }
-          }
-        }
-      }
-    });
-  }
-
   // ── Genre Doughnut ───────────────────────────────────────
   function buildGenreChart(genres) {
     if (genreChartInst) genreChartInst.destroy();
@@ -1009,30 +961,103 @@
     });
   }
 
-  // ── Mood Bars ────────────────────────────────────────────
-  function buildMoodBars(features) {
-    const avg = k => Math.round((features.reduce((s,f) => s + (f[k]||0), 0) / features.length) * 100);
+  // ── Mood Bars (derived from track popularity + artist data) ─
+  function buildMoodBarsFromTracks(tracks) {
+    if (!tracks.length) {
+      document.getElementById('moodGrid').innerHTML = '<p style="color:var(--muted);font-size:0.75rem;font-family:DM Mono,monospace;">No track data available.</p>';
+      return;
+    }
+
+    // Bucket tracks by popularity into mood proxies
+    const pop      = tracks.map(t => t.popularity || 0);
+    const avgPop   = Math.round(pop.reduce((s,v)=>s+v,0)/pop.length);
+    const maxPop   = Math.max(...pop);
+    const minPop   = Math.min(...pop);
+    const spread   = maxPop - minPop;
+    const explicit = Math.round((tracks.filter(t=>t.explicit).length / tracks.length) * 100);
+    const multiArt = Math.round((tracks.filter(t=>t.artists?.length>1).length / tracks.length) * 100);
+    const avgDur   = Math.round(tracks.reduce((s,t)=>s+(t.duration_ms||0),0)/tracks.length/1000/60*100)/100;
+    const longTrk  = Math.round((tracks.filter(t=>(t.duration_ms||0)>210000).length/tracks.length)*100);
+
     const moods = [
-      { key: 'energy',           label: 'Energy',        color: '#f59e0b' },
-      { key: 'danceability',     label: 'Danceability',  color: '#1db954' },
-      { key: 'valence',          label: 'Happiness',     color: '#ec4899' },
-      { key: 'acousticness',     label: 'Acoustic',      color: '#3b82f6' },
-      { key: 'instrumentalness', label: 'Instrumental',  color: '#a855f7' },
-      { key: 'speechiness',      label: 'Vocal',         color: '#14b8a6' },
+      { label: 'Mainstream Score', val: avgPop,   color: '#1db954', tip: 'Avg popularity' },
+      { label: 'Taste Diversity',  val: spread,    color: '#a855f7', tip: 'Pop. range across tracks' },
+      { label: 'Explicit Content', val: explicit,  color: '#ec4899', tip: '% explicit tracks' },
+      { label: 'Collaborations',   val: multiArt,  color: '#3b82f6', tip: '% multi-artist tracks' },
+      { label: 'Long Tracks',      val: longTrk,   color: '#f59e0b', tip: '% tracks over 3.5 min' },
+      { label: 'Avg Duration',     val: Math.min(Math.round(avgDur*10),100), color: '#14b8a6', tip: `${avgDur} min avg` },
     ];
 
-    document.getElementById('moodGrid').innerHTML = moods.map(m => {
-      const val = avg(m.key);
-      return `<div class="mood-item">
+    document.getElementById('moodGrid').innerHTML = moods.map(m => `
+      <div class="mood-item">
         <div class="mood-label">
-          <span>${m.label}</span>
-          <span class="mood-val">${val}%</span>
+          <span title="${m.tip}">${m.label}</span>
+          <span class="mood-val">${m.val}%</span>
         </div>
         <div class="mood-track">
-          <div class="mood-fill" style="width:${val}%;background:${m.color}"></div>
+          <div class="mood-fill" style="width:${Math.min(m.val,100)}%;background:${m.color}"></div>
         </div>
-      </div>`;
-    }).join('');
+      </div>`).join('');
+  }
+
+  // ── Radar (derived from genre mix, no audio-features needed) ─
+  function buildRadarFromGenres(genres) {
+    if (radarChartInst) radarChartInst.destroy();
+    if (!genres.length) return;
+
+    // Score each sonic dimension based on genre keywords
+    const score = (keywords) => {
+      const matches = genres.filter(g => keywords.some(k => g.includes(k))).length;
+      return Math.min(Math.round((matches / genres.length) * 300), 100);
+    };
+
+    const data = [
+      score(['edm','electronic','dance','house','techno','club']),
+      score(['hip hop','rap','trap','r&b','soul','funk']),
+      score(['pop','latin','reggaeton','kpop','indie pop']),
+      score(['rock','metal','punk','alternative','grunge','hard']),
+      score(['acoustic','folk','singer','country','classical','jazz']),
+      score(['reggae','afro','world','cumbia','salsa','bossa']),
+    ];
+
+    radarChartInst = new Chart(document.getElementById('radarChart'), {
+      type: 'radar',
+      data: {
+        labels: ['Electronic','Hip-Hop / R&B','Pop / Latin','Rock','Acoustic / Folk','World'],
+        datasets: [{
+          label: 'Your Genre Mix',
+          data,
+          borderColor: '#1db954',
+          backgroundColor: 'rgba(29,185,84,0.12)',
+          pointBackgroundColor: '#1db954',
+          pointBorderColor: '#080810',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            min: 0, max: 100,
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            angleLines: { color: 'rgba(255,255,255,0.05)' },
+            pointLabels: { color: '#6b7280', font: { size: 10 } },
+            ticks: { display: false },
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#12121f',
+            borderColor: 'rgba(255,255,255,0.06)',
+            borderWidth: 1,
+            callbacks: { label: c => ` ${c.label}: ${c.raw}%` }
+          }
+        }
+      }
+    });
   }
 
   // ── Render Artists ───────────────────────────────────────
@@ -1069,21 +1094,40 @@
     }).join('');
   }
 
-  // ── Render Genre Cloud ───────────────────────────────────
-  function renderStatCards(artists, features) {
-    // Top genre
+  // ── Stat Cards (derived from tracks + artists) ───────────
+  function renderStatCards(artists, tracks) {
+    // Top genre from artists
     const genreCount = {};
     artists.forEach(a => a.genres?.forEach(g => { genreCount[g] = (genreCount[g]||0)+1; }));
     const topGenre = Object.entries(genreCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
     document.getElementById('statGenre').textContent = topGenre;
 
-    // Audio feature averages
-    if (features.length > 0) {
-      const avg = k => Math.round((features.reduce((s,f)=>s+(f[k]||0),0)/features.length)*100);
-      document.getElementById('statEnergy').textContent = avg('energy') + '%';
-      document.getElementById('statDance').textContent  = avg('danceability') + '%';
-      document.getElementById('statMood').textContent   = avg('valence') + '%';
-    }
+    // Avg popularity as proxy for "mainstream score"
+    const avgPop = tracks.length
+      ? Math.round(tracks.reduce((s,t) => s + (t.popularity||0), 0) / tracks.length)
+      : 0;
+    document.getElementById('statEnergy').textContent  = avgPop + '%';
+    document.getElementById('statEnergy').closest('.stat-card').querySelector('.stat-label').textContent = 'Avg Popularity';
+    document.getElementById('statEnergy').closest('.stat-card').querySelector('.stat-sub').textContent   = 'Across top tracks';
+
+    // Unique artists count
+    const uniqueArtists = new Set(tracks.flatMap(t => t.artists?.map(a=>a.id)||[])).size;
+    document.getElementById('statDance').textContent = uniqueArtists;
+    document.getElementById('statDance').closest('.stat-card').querySelector('.stat-label').textContent = 'Unique Artists';
+    document.getElementById('statDance').closest('.stat-card').querySelector('.stat-icon').textContent  = '🎤';
+    document.getElementById('statDance').closest('.stat-card').querySelector('.stat-sub').textContent   = 'In top 20 tracks';
+
+    // Avg artist followers (M)
+    const avgFollowers = artists.length
+      ? artists.reduce((s,a) => s + (a.followers?.total||0), 0) / artists.length
+      : 0;
+    const fmtF = avgFollowers >= 1e6
+      ? (avgFollowers/1e6).toFixed(1)+'M'
+      : (avgFollowers/1e3).toFixed(0)+'K';
+    document.getElementById('statMood').textContent = fmtF;
+    document.getElementById('statMood').closest('.stat-card').querySelector('.stat-label').textContent = 'Avg Followers';
+    document.getElementById('statMood').closest('.stat-card').querySelector('.stat-icon').textContent  = '👥';
+    document.getElementById('statMood').closest('.stat-card').querySelector('.stat-sub').textContent   = 'Your top artists';
   }
 
   // ── Main Load ────────────────────────────────────────────
@@ -1094,7 +1138,7 @@
       document.getElementById('trackList').innerHTML = '<li class="loading-state"><span class="spinner"></span> Loading tracks...</li>';
       document.getElementById('moodGrid').innerHTML = '<div class="loading-state"><span class="spinner"></span></div>';
 
-      // Fetch top artists + tracks in parallel
+      // Fetch top artists + tracks + profile in parallel
       const [artistsData, tracksData, profileData] = await Promise.all([
         spotifyFetch(`/me/top/artists?limit=10&time_range=${term}`),
         spotifyFetch(`/me/top/tracks?limit=20&time_range=${term}`),
@@ -1114,31 +1158,25 @@
           `Hey ${profileData.display_name?.split(' ')[0] || 'there'} — here's a deep dive into your Spotify listening DNA.`;
       }
 
-      // Fetch audio features for top tracks
-      const trackIds = tracks.slice(0,20).map(t => t.id).join(',');
-      let features = [];
-      if (trackIds) {
-        const featData = await spotifyFetch(`/audio-features?ids=${trackIds}`);
-        features = (featData.audio_features || []).filter(Boolean);
-      }
-
-      // Extract genres
+      // Extract genres from artists (no restricted API needed)
       const allGenres = artists.flatMap(a => a.genres || []);
 
-      // Render everything
+      // Derive stat cards from available data
+      renderStatCards(artists, tracks);
+
+      // Render all sections
       renderArtists(artists);
       renderTracks(tracks);
-      renderStatCards(artists, features);
-      buildMoodBars(features);
+      buildMoodBarsFromTracks(tracks);
+      buildRadarFromGenres(allGenres);
 
-      if (features.length > 0) buildRadar(features);
       if (allGenres.length > 0) buildGenreChart(allGenres);
       if (artists.length > 0)   buildBubbleChart(artists);
 
     } catch (err) {
       const errEl = document.getElementById('errorMsg');
       errEl.style.display = 'block';
-      errEl.textContent = '⚠ ' + err.message + ' — your token may have expired. Please refresh and reconnect.';
+      errEl.textContent = '⚠ ' + err.message;
       console.error(err);
     }
   }
