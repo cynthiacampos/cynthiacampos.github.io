@@ -641,7 +641,7 @@
 <div id="dashboard">
 
   <div class="dash-header">
-    <div class="dash-eyebrow">Spotify Web API — OAuth 2.0 Implicit Grant</div>
+    <div class="dash-eyebrow">Spotify Web API — OAuth 2.0 PKCE Flow</div>
     <h1>Your Music <em>DNA</em></h1>
     <p id="dashSubtitle">Analyzing your listening patterns, top artists, tracks, and sonic personality from Spotify.</p>
     <div class="time-tabs">
@@ -784,22 +784,74 @@
   let genreChartInst = null;
   let bubbleChartInst = null;
 
-  // ── OAuth ────────────────────────────────────────────────
-  function loginWithSpotify() {
+  // ── PKCE Helpers ─────────────────────────────────────────
+  function generateRandomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array).map(b => chars[b % chars.length]).join('');
+  }
+
+  async function generateCodeChallenge(verifier) {
+    const data   = new TextEncoder().encode(verifier);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+
+  // ── Login ────────────────────────────────────────────────
+  async function loginWithSpotify() {
+    const verifier  = generateRandomString(64);
+    const challenge = await generateCodeChallenge(verifier);
+    sessionStorage.setItem('pkce_verifier', verifier);
+
     const params = new URLSearchParams({
-      client_id:     CLIENT_ID,
-      response_type: 'token',
-      redirect_uri:  REDIRECT_URI,
-      scope:         SCOPES,
-      show_dialog:   'false',
+      client_id:             CLIENT_ID,
+      response_type:         'code',
+      redirect_uri:          REDIRECT_URI,
+      scope:                 SCOPES,
+      code_challenge_method: 'S256',
+      code_challenge:        challenge,
     });
     window.location.href = 'https://accounts.spotify.com/authorize?' + params.toString();
   }
 
-  function getTokenFromHash() {
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    return params.get('access_token');
+  // ── Token Exchange ───────────────────────────────────────
+  async function exchangeCode(code) {
+    const verifier = sessionStorage.getItem('pkce_verifier');
+    if (!verifier) throw new Error('PKCE verifier missing — please try logging in again.');
+
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id:     CLIENT_ID,
+        grant_type:    'authorization_code',
+        code,
+        redirect_uri:  REDIRECT_URI,
+        code_verifier: verifier,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error_description || 'Token exchange failed — please try again.');
+    }
+
+    const data = await res.json();
+    sessionStorage.removeItem('pkce_verifier');
+    sessionStorage.setItem('sp_token', data.access_token);
+    sessionStorage.setItem('sp_expiry', Date.now() + data.expires_in * 1000);
+    return data.access_token;
+  }
+
+  function getStoredToken() {
+    const token  = sessionStorage.getItem('sp_token');
+    const expiry = sessionStorage.getItem('sp_expiry');
+    if (token && expiry && Date.now() < parseInt(expiry)) return token;
+    sessionStorage.removeItem('sp_token');
+    sessionStorage.removeItem('sp_expiry');
+    return null;
   }
 
   // ── API Helper ───────────────────────────────────────────
@@ -807,7 +859,7 @@
     const res = await fetch('https://api.spotify.com/v1' + endpoint, {
       headers: { Authorization: 'Bearer ' + accessToken }
     });
-    if (!res.ok) throw new Error(`Spotify API error: ${res.status} on ${endpoint}`);
+    if (!res.ok) throw new Error(`Spotify API error ${res.status} — ${endpoint}`);
     return res.json();
   }
 
