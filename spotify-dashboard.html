@@ -31,6 +31,8 @@
     .sp-icon { width:20px; height:20px; background:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; }
     .user-pill { display:flex; align-items:center; gap:8px; font-family:'DM Mono',monospace; font-size:.7rem; color:var(--green); background:rgba(29,185,84,.08); border:1px solid rgba(29,185,84,.2); padding:.3rem .9rem; border-radius:2rem; }
     .user-avatar { width:20px; height:20px; border-radius:50%; object-fit:cover; }
+    .logout-btn { font-family:'DM Mono',monospace; font-size:.68rem; background:transparent; border:1px solid rgba(255,255,255,.08); color:var(--muted); padding:.28rem .75rem; border-radius:2rem; cursor:pointer; transition:all .2s; margin-left:6px; }
+    .logout-btn:hover { border-color:#f87171; color:#f87171; background:rgba(248,113,113,.06); }
 
     #loginScreen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:50; background:var(--bg); }
     .login-card { text-align:center; max-width:440px; padding:3rem; background:var(--card); border:1px solid var(--border); border-radius:20px; position:relative; overflow:hidden; }
@@ -112,9 +114,9 @@
 
     .heat-day-labels { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:6px; }
     .heat-day-lbl { font-family:'DM Mono',monospace; font-size:.58rem; color:var(--dim); text-align:center; }
-    .heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-    .heat-cell { aspect-ratio:1; border-radius:3px; cursor:default; transition:transform .15s; }
-    .heat-cell:hover { transform:scale(1.2); }
+    .heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+    .heat-cell { height:52px; border-radius:6px; cursor:default; transition:transform .15s, opacity .15s; }
+    .heat-cell:hover { transform:scale(1.08); }
 
     .loading-state { display:flex; align-items:center; justify-content:center; height:100px; gap:10px; font-family:'DM Mono',monospace; font-size:.75rem; color:var(--muted); }
     .spinner { width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin .7s linear infinite; }
@@ -138,6 +140,7 @@
     <img class="user-avatar" id="userAvatar" src="" alt="" />
     <span id="userName">—</span>
   </div>
+  <button class="logout-btn" id="logoutBtn" style="display:none" onclick="logout()">↩ Log out</button>
 </nav>
 
 <div id="loginScreen">
@@ -336,18 +339,26 @@
     ).join('');
   }
 
-  // ── Followers bar ─────────────────────────────────────────
-  function renderFollowersBar(artists) {
-    const top=artists.slice(0,8);
-    const max=Math.max(...top.map(a=>a.followers?.total||0),1);
-    document.getElementById('followersBar').innerHTML = top.map((a,i)=>{
-      const v=a.followers?.total||0;
-      return `<div class="bar-row">
-        <span class="bar-lbl" title="${a.name}">${a.name}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%;background:${PALETTE[i%PALETTE.length]}"></div></div>
-        <span class="bar-val">${fmtF(v)}</span>
-      </div>`;
-    }).join('');
+  // ── Followers bar — fetch individual artist pages for follower counts ──
+  async function renderFollowersBar(artists) {
+    document.getElementById('followersBar').innerHTML='<div class="loading-state"><span class="spinner"></span> Loading...</div>';
+    try {
+      // Fetch each artist individually to get full follower data
+      const ids = artists.slice(0,8).map(a=>a.id).join(',');
+      const data = await sp(`/artists?ids=${ids}`);
+      const full = data.artists || artists.slice(0,8);
+      const max  = Math.max(...full.map(a=>a.followers?.total||0),1);
+      document.getElementById('followersBar').innerHTML = full.map((a,i)=>{
+        const v = a.followers?.total || 0;
+        return `<div class="bar-row">
+          <span class="bar-lbl" title="${a.name}">${a.name}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%;background:${PALETTE[i%PALETTE.length]}"></div></div>
+          <span class="bar-val">${v>0?fmtF(v):'—'}</span>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      document.getElementById('followersBar').innerHTML='<p style="font-family:\'DM Mono\',monospace;font-size:.7rem;color:var(--muted)">Follower data unavailable.</p>';
+    }
   }
 
   // ── Duration chart ────────────────────────────────────────
@@ -387,14 +398,27 @@
     for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);counts[d.toISOString().slice(0,10)]=0;}
     items.forEach(it=>{const k=it.played_at.slice(0,10);if(k in counts)counts[k]++;});
     const keys=Object.keys(counts).sort(), vals=keys.map(k=>counts[k]), max=Math.max(...vals,1);
+
     document.getElementById('heatLabels').innerHTML=keys.map(k=>`<span class="heat-day-lbl">${DAYS[new Date(k+'T12:00:00').getDay()]}</span>`).join('');
+
     document.getElementById('heatGrid').innerHTML=keys.map((k,i)=>{
-      const v=vals[i], a=v===0?0.06:0.15+(v/max)*.85;
-      const d=new Date(k+'T12:00:00');
-      return `<div class="heat-cell" style="background:rgba(29,185,84,${a.toFixed(2)})" title="${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}: ${v} play${v!==1?'s':''}"></div>`;
+      const v   = vals[i];
+      const alpha = v===0 ? 0 : 0.2+(v/max)*0.8;
+      const d   = new Date(k+'T12:00:00');
+      const lbl = `${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}: ${v} play${v!==1?'s':''}`;
+      const bg  = v===0
+        ? 'background:transparent;border:1px solid rgba(255,255,255,.08)'
+        : `background:rgba(29,185,84,${alpha.toFixed(2)})`;
+      const countLabel = v>0
+        ? `<span style="font-family:'DM Mono',monospace;font-size:.65rem;color:${alpha>0.5?'rgba(0,0,0,.7)':'rgba(255,255,255,.7)'};position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">${v}</span>`
+        : '';
+      return `<div class="heat-cell" style="${bg};position:relative;" title="${lbl}">${countLabel}</div>`;
     }).join('');
+
     const total=vals.reduce((s,v)=>s+v,0);
-    document.getElementById('heatLegend').textContent=`${total} plays in the last 7 days — hover a cell for details`;
+    const peak  = keys[vals.indexOf(max)];
+    const peakDay = new Date(peak+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'});
+    document.getElementById('heatLegend').textContent=`${total} plays this week · Most active: ${peakDay} (${max} plays) · hover cells for detail`;
   }
 
   // ── Load dashboard ────────────────────────────────────────
@@ -422,7 +446,7 @@
       renderKPIs(artists, tracks);
       renderArtists(artists);
       renderTracks(tracks);
-      renderFollowersBar(artists);
+      renderFollowersBar(artists); // async — fetches full artist objects for follower counts
       renderDurationChart(tracks);
       renderExplicitChart(tracks);
       renderRecent(recent);
@@ -434,7 +458,21 @@
     }
   }
 
-  function switchTerm(term,btn){currentTerm=term;document.querySelectorAll('.time-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');loadDashboard(term);}
+  async function logout() {
+    sessionStorage.removeItem('sp_tok');
+    sessionStorage.removeItem('sp_exp');
+    sessionStorage.removeItem('pkce_v');
+    // Generate fresh PKCE so the forced account picker login works
+    const v=randStr(64), c=await sha256b64(v);
+    sessionStorage.setItem('pkce_v',v);
+    window.location.href='https://accounts.spotify.com/authorize?'+new URLSearchParams({client_id:CLIENT_ID,response_type:'code',redirect_uri:REDIRECT_URI,scope:SCOPES,code_challenge_method:'S256',code_challenge:c,show_dialog:'true'});
+  }
+
+  function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display   = 'block';
+    document.getElementById('logoutBtn').style.display   = 'block';
+  }
 
   // ── Boot ──────────────────────────────────────────────────
   window.addEventListener('load', async () => {
@@ -442,12 +480,20 @@
     if(err){document.getElementById('loginScreen').style.display='flex';return;}
     if(code){
       history.replaceState(null,'',window.location.pathname);
-      try{accessToken=await exchangeCode(code);document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';loadDashboard(currentTerm);}
-      catch(e){const el=document.getElementById('loginErr');el.style.display='block';el.textContent='⚠ '+e.message;document.getElementById('loginScreen').style.display='flex';}
+      try{
+        accessToken=await exchangeCode(code);
+        showDashboard();
+        loadDashboard(currentTerm);
+      } catch(e){
+        const el=document.getElementById('loginErr');
+        el.style.display='block';
+        el.textContent='⚠ '+e.message;
+        document.getElementById('loginScreen').style.display='flex';
+      }
       return;
     }
     const s=storedToken();
-    if(s){accessToken=s;document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';loadDashboard(currentTerm);return;}
+    if(s){accessToken=s;showDashboard();loadDashboard(currentTerm);return;}
     document.getElementById('loginScreen').style.display='flex';
   });
 </script>
