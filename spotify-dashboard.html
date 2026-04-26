@@ -873,13 +873,24 @@
   // ── Genre Doughnut ───────────────────────────────────────
   function buildGenreChart(genres) {
     if (genreChartInst) genreChartInst.destroy();
+
+    // If no genres from Spotify, show a friendly fallback message
+    const canvas = document.getElementById('genreChart');
+    if (!genres.length) {
+      canvas.style.display = 'none';
+      canvas.insertAdjacentHTML('afterend',
+        '<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.72rem;padding:20px 0;">Spotify hasn\'t categorized your top artists into genres yet — this is common for newer or niche artists.</p>'
+      );
+      return;
+    }
+
     const counts = {};
     genres.forEach(g => { counts[g] = (counts[g]||0) + 1; });
     const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,7);
     const labels = sorted.map(([g]) => g);
     const data   = sorted.map(([,c]) => c);
 
-    genreChartInst = new Chart(document.getElementById('genreChart'), {
+    genreChartInst = new Chart(canvas, {
       type: 'doughnut',
       data: {
         labels,
@@ -912,20 +923,24 @@
   // ── Bubble Chart ─────────────────────────────────────────
   function buildBubbleChart(artists) {
     if (bubbleChartInst) bubbleChartInst.destroy();
-    const data = artists.slice(0,10).map((a, i) => ({
-      x: a.popularity,
-      y: Math.round(Math.random() * 40 + 30), // simulated stream affinity
-      r: Math.max(6, 20 - i * 1.5),
+    if (!artists.length) return;
+
+    // Y axis = affinity score derived from rank (rank 1 = 100, rank 10 = 10)
+    const total = artists.length;
+    const chartData = artists.slice(0,10).map((a, i) => ({
+      x: a.popularity || 0,
+      y: Math.round(((total - i) / total) * 100),
+      r: Math.max(5, 18 - i * 1.2),
       label: a.name,
     }));
 
     bubbleChartInst = new Chart(document.getElementById('bubbleChart'), {
       type: 'bubble',
       data: {
-        datasets: data.map((d, i) => ({
+        datasets: chartData.map((d, i) => ({
           label: d.label,
-          data: [d],
-          backgroundColor: PALETTE[i % PALETTE.length] + '80',
+          data: [{ x: d.x, y: d.y, r: d.r }],
+          backgroundColor: PALETTE[i % PALETTE.length] + '70',
           borderColor:     PALETTE[i % PALETTE.length],
           borderWidth: 1.5,
         }))
@@ -933,28 +948,32 @@
       options: {
         responsive: true,
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: true,
+            position: 'right',
+            labels: { boxWidth: 8, padding: 10, color: '#6b7280', font: { size: 9 } }
+          },
           tooltip: {
             backgroundColor: '#12121f',
             borderColor: 'rgba(255,255,255,0.06)',
             borderWidth: 1,
             callbacks: {
-              label: c => ` ${c.dataset.label} · Popularity: ${c.raw.x}`
+              label: c => ` ${c.dataset.label} · Popularity: ${c.raw.x} · Affinity: ${c.raw.y}%`
             }
           }
         },
         scales: {
           x: {
-            title: { display: true, text: 'Spotify Popularity Score', color: '#4a5568', font: { size: 10 } },
+            title: { display: true, text: 'Spotify Popularity (0–100)', color: '#4a5568', font: { size: 10 } },
             grid: { color: 'rgba(255,255,255,0.04)' },
             ticks: { color: '#4a5568' },
             min: 0, max: 100,
           },
           y: {
-            title: { display: true, text: 'Your Affinity (rank-derived)', color: '#4a5568', font: { size: 10 } },
+            title: { display: true, text: 'Your Affinity Score', color: '#4a5568', font: { size: 10 } },
             grid: { color: 'rgba(255,255,255,0.04)' },
             ticks: { color: '#4a5568' },
-            min: 0, max: 100,
+            min: 0, max: 105,
           }
         }
       }
@@ -1003,24 +1022,41 @@
   // ── Radar (derived from genre mix, no audio-features needed) ─
   function buildRadarFromGenres(genres) {
     if (radarChartInst) radarChartInst.destroy();
-    if (!genres.length) return;
 
-    // Score each sonic dimension based on genre keywords
+    const canvas = document.getElementById('radarChart');
+
+    // If genres empty, show fallback instead of blank chart
+    if (!genres.length) {
+      canvas.style.display = 'none';
+      canvas.insertAdjacentHTML('afterend',
+        '<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.72rem;padding:20px 0;text-align:center;">Genre data unavailable — Spotify hasn\'t tagged your top artists yet.</p>'
+      );
+      return;
+    }
+
+    // Score each sonic dimension based on genre keywords present
     const score = (keywords) => {
-      const matches = genres.filter(g => keywords.some(k => g.includes(k))).length;
-      return Math.min(Math.round((matches / genres.length) * 300), 100);
+      const matches = genres.filter(g => keywords.some(k => g.toLowerCase().includes(k))).length;
+      return Math.min(Math.round((matches / Math.max(genres.length, 1)) * 300), 100);
     };
 
     const data = [
-      score(['edm','electronic','dance','house','techno','club']),
-      score(['hip hop','rap','trap','r&b','soul','funk']),
-      score(['pop','latin','reggaeton','kpop','indie pop']),
-      score(['rock','metal','punk','alternative','grunge','hard']),
-      score(['acoustic','folk','singer','country','classical','jazz']),
-      score(['reggae','afro','world','cumbia','salsa','bossa']),
+      score(['edm','electronic','dance','house','techno','club','electro']),
+      score(['hip hop','rap','trap','r&b','soul','funk','urban']),
+      score(['pop','latin','reggaeton','kpop','indie pop','synth']),
+      score(['rock','metal','punk','alternative','grunge','hard rock']),
+      score(['acoustic','folk','singer','country','classical','jazz','blues']),
+      score(['reggae','afro','world','cumbia','salsa','bossa','tropical']),
     ];
 
-    radarChartInst = new Chart(document.getElementById('radarChart'), {
+    // If all scores are 0 (genres exist but none match keywords), give a base score
+    const hasData = data.some(v => v > 0);
+    if (!hasData) {
+      // Distribute evenly as a fallback
+      data.fill(Math.round(100 / data.length));
+    }
+
+    radarChartInst = new Chart(canvas, {
       type: 'radar',
       data: {
         labels: ['Electronic','Hip-Hop / R&B','Pop / Latin','Rock','Acoustic / Folk','World'],
@@ -1096,13 +1132,21 @@
 
   // ── Stat Cards (derived from tracks + artists) ───────────
   function renderStatCards(artists, tracks) {
-    // Top genre from artists
+    // Top genre — try genres first, fall back to top artist name
     const genreCount = {};
     artists.forEach(a => a.genres?.forEach(g => { genreCount[g] = (genreCount[g]||0)+1; }));
-    const topGenre = Object.entries(genreCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
-    document.getElementById('statGenre').textContent = topGenre;
+    const topGenreEntry = Object.entries(genreCount).sort((a,b)=>b[1]-a[1])[0];
+    const topGenre = topGenreEntry
+      ? topGenreEntry[0]
+      : (artists[0]?.name || '—');
+    const genreEl = document.getElementById('statGenre');
+    genreEl.textContent = topGenre;
+    genreEl.style.fontSize = topGenre.length > 12 ? '0.85rem' : '1.1rem';
+    if (!topGenreEntry) {
+      genreEl.closest('.stat-card').querySelector('.stat-sub').textContent = 'Top artist';
+    }
 
-    // Avg popularity as proxy for "mainstream score"
+    // Avg popularity as mainstream score
     const avgPop = tracks.length
       ? Math.round(tracks.reduce((s,t) => s + (t.popularity||0), 0) / tracks.length)
       : 0;
@@ -1117,7 +1161,7 @@
     document.getElementById('statDance').closest('.stat-card').querySelector('.stat-icon').textContent  = '🎤';
     document.getElementById('statDance').closest('.stat-card').querySelector('.stat-sub').textContent   = 'In top 20 tracks';
 
-    // Avg artist followers (M)
+    // Avg artist followers
     const avgFollowers = artists.length
       ? artists.reduce((s,a) => s + (a.followers?.total||0), 0) / artists.length
       : 0;
@@ -1138,9 +1182,9 @@
       document.getElementById('trackList').innerHTML = '<li class="loading-state"><span class="spinner"></span> Loading tracks...</li>';
       document.getElementById('moodGrid').innerHTML = '<div class="loading-state"><span class="spinner"></span></div>';
 
-      // Fetch top artists + tracks + profile in parallel
+      // Fetch top artists + tracks + profile in parallel (20 artists for better genre coverage)
       const [artistsData, tracksData, profileData] = await Promise.all([
-        spotifyFetch(`/me/top/artists?limit=10&time_range=${term}`),
+        spotifyFetch(`/me/top/artists?limit=20&time_range=${term}`),
         spotifyFetch(`/me/top/tracks?limit=20&time_range=${term}`),
         spotifyFetch('/me'),
       ]);
@@ -1158,20 +1202,17 @@
           `Hey ${profileData.display_name?.split(' ')[0] || 'there'} — here's a deep dive into your Spotify listening DNA.`;
       }
 
-      // Extract genres from artists (no restricted API needed)
+      // Extract genres from all artists (wider pool = more genre hits)
       const allGenres = artists.flatMap(a => a.genres || []);
 
-      // Derive stat cards from available data
+      // Render all sections — each function handles its own empty state
       renderStatCards(artists, tracks);
-
-      // Render all sections
-      renderArtists(artists);
+      renderArtists(artists.slice(0, 10));
       renderTracks(tracks);
       buildMoodBarsFromTracks(tracks);
       buildRadarFromGenres(allGenres);
-
-      if (allGenres.length > 0) buildGenreChart(allGenres);
-      if (artists.length > 0)   buildBubbleChart(artists);
+      buildGenreChart(allGenres);
+      buildBubbleChart(artists.slice(0, 10));
 
     } catch (err) {
       const errEl = document.getElementById('errorMsg');
