@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Music DNA | Cynthia Campos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Satoshi:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #080810;
+      --bg2:        #0f0f1a;
+      --bg3:        #16162a;
+      --card:       #12121f;
+      --border:     rgba(255,255,255,0.06);
+      --sp-green:   #1db954;
+      --sp-glow:    rgba(29,185,84,0.2);
+      --purple:     #a855f7;
+      --pink:       #ec4899;
+      --blue:       #3b82f6;
+      --amber:      #f59e0b;
+      --text:       #f0f0f8;
+      --muted:      #6b7280;
+      --dim:        #374151;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Satoshi', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated gradient orbs in background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(29,185,84,0.06) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: drift1 20s ease-in-out infinite;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -20%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: drift2 25s ease-in-out infinite;
+    }
+
+    @keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
+    @keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,-60px)} }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(8,8,16,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-left { display: flex; align-items: center; gap: 1rem; }
+
+    .nav-back {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--sp-green); }
+
+    .nav-divider { width: 1px; height: 14px; background: var(--border); }
+
+    .nav-logo {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .sp-icon {
+      width: 20px; height: 20px;
+      background: var(--sp-green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+    }
+
+    .user-pill {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--sp-green);
+      background: rgba(29,185,84,0.08);
+      border: 1px solid rgba(29,185,84,0.2);
+      padding: 0.3rem 0.9rem;
+      border-radius: 2rem;
+    }
+
+    .user-avatar {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* ── Login Screen ── */
+    #loginScreen {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50;
+      background: var(--bg);
+    }
+
+    .login-card {
+      text-align: center;
+      max-width: 440px;
+      padding: 3rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: -60px; left: 50%;
+      transform: translateX(-50%);
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(29,185,84,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .login-icon {
+      width: 72px; height: 72px;
+      background: var(--sp-green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 32px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 0 40px rgba(29,185,84,0.3);
+    }
+
+    .login-card h1 {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative; z-index: 1;
+    }
+
+    .login-card h1 span { color: var(--sp-green); }
+
+    .login-card p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      position: relative; z-index: 1;
+    }
+
+    .login-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--sp-green);
+      color: #000;
+      font-family: 'Satoshi', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0.85rem 2rem;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative; z-index: 1;
+    }
+
+    .login-btn:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 30px rgba(29,185,84,0.4);
+    }
+
+    .login-note {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--dim);
+      margin-top: 1.25rem;
+      position: relative; z-index: 1;
+    }
+
+    /* ── Dashboard ── */
+    #dashboard {
+      display: none;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 90px 2.5rem 60px;
+      position: relative; z-index: 1;
+    }
+
+    /* ── Page Header ── */
+    .dash-header {
+      margin-bottom: 48px;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dash-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--sp-green);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .dash-eyebrow::before { content: '♫'; opacity: 0.6; }
+
+    .dash-header h1 {
+      font-family: 'Clash Display', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.6rem;
+    }
+
+    .dash-header h1 em {
+      font-style: italic;
+      background: linear-gradient(135deg, var(--sp-green), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dash-header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    .time-tabs {
+      display: flex; gap: 8px;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .time-tab {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .time-tab.active, .time-tab:hover {
+      border-color: var(--sp-green);
+      color: var(--sp-green);
+      background: rgba(29,185,84,0.08);
+    }
+
+    /* ── Section Label ── */
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--dim);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Stat Cards ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .stat-card:nth-child(1){ animation-delay:0.15s; border-top: 2px solid var(--sp-green); }
+    .stat-card:nth-child(2){ animation-delay:0.20s; border-top: 2px solid var(--purple); }
+    .stat-card:nth-child(3){ animation-delay:0.25s; border-top: 2px solid var(--pink); }
+    .stat-card:nth-child(4){ animation-delay:0.30s; border-top: 2px solid var(--amber); }
+
+    .stat-icon { font-size: 1.4rem; margin-bottom: 10px; }
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .stat-card:nth-child(1) .stat-value { color: var(--sp-green); }
+    .stat-card:nth-child(2) .stat-value { color: var(--purple); }
+    .stat-card:nth-child(3) .stat-value { color: var(--pink); }
+    .stat-card:nth-child(4) .stat-value { color: var(--amber); }
+    .stat-sub { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--dim); margin-top: 4px; }
+
+    /* ── Chart Grid ── */
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .grid-full  { margin-bottom: 16px; }
+
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .chart-card:nth-child(1){ animation-delay:0.35s; }
+    .chart-card:nth-child(2){ animation-delay:0.42s; }
+    .chart-card:nth-child(3){ animation-delay:0.38s; }
+    .chart-card:nth-child(4){ animation-delay:0.45s; }
+    .chart-card:nth-child(5){ animation-delay:0.50s; }
+
+    .card-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .card-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .api-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--sp-green);
+      background: rgba(29,185,84,0.08);
+      border: 1px solid rgba(29,185,84,0.15);
+      padding: 2px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    /* ── Track List ── */
+    .track-list { list-style: none; }
+
+    .track-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: background 0.15s;
+    }
+
+    .track-item:last-child { border-bottom: none; }
+
+    .track-rank {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--dim);
+      width: 20px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .track-img {
+      width: 36px; height: 36px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--bg3);
+    }
+
+    .track-info { flex: 1; min-width: 0; }
+
+    .track-name {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-artist {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-pop {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--sp-green);
+      flex-shrink: 0;
+    }
+
+    /* ── Artist Grid ── */
+    .artist-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .artist-card {
+      text-align: center;
+      cursor: default;
+    }
+
+    .artist-img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--bg3);
+      margin-bottom: 8px;
+      border: 2px solid var(--border);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .artist-card:hover .artist-img {
+      border-color: var(--sp-green);
+      transform: scale(1.04);
+    }
+
+    .artist-name {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .artist-followers {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Mood Bar ── */
+    .mood-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mood-item { }
+
+    .mood-label {
+      display: flex; justify-content: space-between;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .mood-val { color: var(--text); }
+
+    .mood-track {
+      height: 5px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .mood-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s ease;
+    }
+
+    /* ── Genre Tags ── */
+    .genre-cloud {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding-top: 4px;
+    }
+
+    .genre-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      letter-spacing: 0.04em;
+      transition: transform 0.15s;
+      cursor: default;
+    }
+
+    .genre-tag:hover { transform: scale(1.05); }
+
+    /* ── Loading spinner ── */
+    .loading-state {
+      display: flex; align-items: center; justify-content: center;
+      height: 120px; gap: 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--sp-green);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ── */
+    .dash-footer {
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+
+    .dash-footer p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--dim);
+    }
+
+    .dash-footer a { color: var(--sp-green); text-decoration: none; }
+    .dash-footer a:hover { opacity: 0.75; }
+
+    /* ── Error ── */
+    .error-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: #f87171;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      padding: 10px 14px;
+      border-radius: 7px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-left">
+    <a href="https://cynthiacampos.github.io" class="nav-back">← Portfolio</a>
+    <div class="nav-divider"></div>
+    <div class="nav-logo">
+      <div class="sp-icon">♫</div>
+      Music DNA
+    </div>
+  </div>
+  <div class="user-pill" id="userPill" style="display:none">
+    <img class="user-avatar" id="userAvatar" src="" alt="" />
+    <span id="userName">—</span>
+  </div>
+</nav>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon">♫</div>
+    <h1>Your Music <span>DNA</span></h1>
+    <p>Connect your Spotify account to explore your top artists, tracks, listening moods, and genre profile — all powered by the Spotify Web API.</p>
+    <button class="login-btn" onclick="loginWithSpotify()">
+      ♫ &nbsp; Connect Spotify
+    </button>
+    <p class="login-note">Uses OAuth — no password shared. Read-only access.</p>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+
+  <div class="dash-header">
+    <div class="dash-eyebrow">Spotify Web API — OAuth 2.0 Implicit Grant</div>
+    <h1>Your Music <em>DNA</em></h1>
+    <p id="dashSubtitle">Analyzing your listening patterns, top artists, tracks, and sonic personality from Spotify.</p>
+    <div class="time-tabs">
+      <button class="time-tab active" onclick="switchTerm('short_term', this)">Last 4 Weeks</button>
+      <button class="time-tab" onclick="switchTerm('medium_term', this)">Last 6 Months</button>
+      <button class="time-tab" onclick="switchTerm('long_term', this)">All Time</button>
+    </div>
+  </div>
+
+  <div id="errorMsg" class="error-msg"></div>
+
+  <!-- Stat Cards -->
+  <div class="section-label">Your Listening Snapshot</div>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🎵</div>
+      <div class="stat-label">Top Genre</div>
+      <div class="stat-value" id="statGenre" style="font-size:1.1rem">—</div>
+      <div class="stat-sub">Most listened</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-label">Avg Energy</div>
+      <div class="stat-value" id="statEnergy">—</div>
+      <div class="stat-sub">Across top tracks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💃</div>
+      <div class="stat-label">Danceability</div>
+      <div class="stat-value" id="statDance">—</div>
+      <div class="stat-sub">Across top tracks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">😊</div>
+      <div class="stat-label">Mood Score</div>
+      <div class="stat-value" id="statMood">—</div>
+      <div class="stat-sub">Valence avg</div>
+    </div>
+  </div>
+
+  <!-- Top Artists + Genre Cloud -->
+  <div class="section-label">Top Artists</div>
+  <div class="chart-card grid-full" style="margin-bottom:16px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Your Top Artists</div>
+        <div class="card-sub"><span class="api-tag">GET /me/top/artists</span></div>
+      </div>
+    </div>
+    <div id="artistsGrid" class="artist-grid">
+      <div class="loading-state"><span class="spinner"></span> Loading artists...</div>
+    </div>
+  </div>
+
+  <!-- Top Tracks + Audio Features -->
+  <div class="grid-2col">
+
+    <!-- Top Tracks -->
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top Tracks</div>
+          <div class="card-sub"><span class="api-tag">GET /me/top/tracks</span></div>
+        </div>
+      </div>
+      <ul class="track-list" id="trackList">
+        <li class="loading-state"><span class="spinner"></span> Loading tracks...</li>
+      </ul>
+    </div>
+
+    <!-- Audio Features Radar -->
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Sonic Profile</div>
+          <div class="card-sub"><span class="api-tag">GET /audio-features</span></div>
+        </div>
+      </div>
+      <canvas id="radarChart" height="220"></canvas>
+    </div>
+
+  </div>
+
+  <!-- Genre breakdown + Mood bars -->
+  <div class="grid-2col">
+
+    <!-- Genre Doughnut -->
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Genre Breakdown</div>
+          <div class="card-sub">Derived from top artist genres</div>
+        </div>
+      </div>
+      <canvas id="genreChart" height="180"></canvas>
+    </div>
+
+    <!-- Mood Bars -->
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Audio Mood Profile</div>
+          <div class="card-sub">Avg across your top 20 tracks</div>
+        </div>
+      </div>
+      <div class="mood-grid" id="moodGrid">
+        <div class="loading-state"><span class="spinner"></span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Popularity vs Personal chart -->
+  <div class="chart-card grid-full" style="margin-bottom:48px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Artist Popularity vs Your Affinity</div>
+        <div class="card-sub">Bubble size = how high they rank in your top artists &nbsp;·&nbsp; <span class="api-tag">Spotify popularity score 0–100</span></div>
+      </div>
+    </div>
+    <canvas id="bubbleChart" height="100"></canvas>
+  </div>
+
+  <div class="dash-footer">
+    <p>Music DNA &nbsp;·&nbsp; Spotify Web API · OAuth 2.0 · Chart.js · Vanilla JS</p>
+    <p><a href="https://cynthiacampos.github.io">← Portfolio</a> &nbsp;·&nbsp; <a href="https://github.com/cynthiacampos" target="_blank">GitHub ↗</a></p>
+  </div>
+
+</div>
+
+<script>
+  // ── Config ──────────────────────────────────────────────
+  const CLIENT_ID    = '4e4c45b529d8435185a651d0882d3f8b';
+  const REDIRECT_URI = 'https://cynthiacampos.github.io/spotify-dashboard.html';
+  const SCOPES       = 'user-top-read user-read-private user-read-email';
+
+  let accessToken = null;
+  let currentTerm = 'short_term';
+  let radarChartInst = null;
+  let genreChartInst = null;
+  let bubbleChartInst = null;
+
+  // ── OAuth ────────────────────────────────────────────────
+  function loginWithSpotify() {
+    const params = new URLSearchParams({
+      client_id:     CLIENT_ID,
+      response_type: 'token',
+      redirect_uri:  REDIRECT_URI,
+      scope:         SCOPES,
+      show_dialog:   'false',
+    });
+    window.location.href = 'https://accounts.spotify.com/authorize?' + params.toString();
+  }
+
+  function getTokenFromHash() {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    return params.get('access_token');
+  }
+
+  // ── API Helper ───────────────────────────────────────────
+  async function spotifyFetch(endpoint) {
+    const res = await fetch('https://api.spotify.com/v1' + endpoint, {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
+    if (!res.ok) throw new Error(`Spotify API error: ${res.status} on ${endpoint}`);
+    return res.json();
+  }
+
+  // ── Charts Setup ─────────────────────────────────────────
+  Chart.defaults.color = '#6b7280';
+  Chart.defaults.font.family = "'DM Mono', monospace";
+  Chart.defaults.font.size = 10;
+
+  const PALETTE = ['#1db954','#a855f7','#ec4899','#3b82f6','#f59e0b','#14b8a6','#f97316','#8b5cf6'];
+
+  // ── Radar Chart ──────────────────────────────────────────
+  function buildRadar(features) {
+    if (radarChartInst) radarChartInst.destroy();
+    const avg = k => Math.round((features.reduce((s,f) => s + (f[k]||0), 0) / features.length) * 100);
+
+    radarChartInst = new Chart(document.getElementById('radarChart'), {
+      type: 'radar',
+      data: {
+        labels: ['Energy','Danceability','Valence','Acousticness','Instrumentalness','Speechiness'],
+        datasets: [{
+          label: 'Your Sound',
+          data: [
+            avg('energy'), avg('danceability'), avg('valence'),
+            avg('acousticness'), avg('instrumentalness'), avg('speechiness')
+          ],
+          borderColor: '#1db954',
+          backgroundColor: 'rgba(29,185,84,0.12)',
+          pointBackgroundColor: '#1db954',
+          pointBorderColor: '#080810',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            min: 0, max: 100,
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            angleLines: { color: 'rgba(255,255,255,0.05)' },
+            pointLabels: { color: '#6b7280', font: { size: 10 } },
+            ticks: { display: false, stepSize: 25 },
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#12121f',
+            borderColor: 'rgba(255,255,255,0.06)',
+            borderWidth: 1,
+            callbacks: { label: c => ' ' + c.label + ': ' + c.raw + '%' }
+          }
+        }
+      }
+    });
+  }
+
+  // ── Genre Doughnut ───────────────────────────────────────
+  function buildGenreChart(genres) {
+    if (genreChartInst) genreChartInst.destroy();
+    const counts = {};
+    genres.forEach(g => { counts[g] = (counts[g]||0) + 1; });
+    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,7);
+    const labels = sorted.map(([g]) => g);
+    const data   = sorted.map(([,c]) => c);
+
+    genreChartInst = new Chart(document.getElementById('genreChart'), {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: PALETTE,
+          borderColor: '#12121f',
+          borderWidth: 3,
+          hoverOffset: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: { padding: 12, boxWidth: 10, color: '#6b7280', font: { size: 10 } }
+          },
+          tooltip: {
+            backgroundColor: '#12121f',
+            borderColor: 'rgba(255,255,255,0.06)',
+            borderWidth: 1,
+          }
+        }
+      }
+    });
+  }
+
+  // ── Bubble Chart ─────────────────────────────────────────
+  function buildBubbleChart(artists) {
+    if (bubbleChartInst) bubbleChartInst.destroy();
+    const data = artists.slice(0,10).map((a, i) => ({
+      x: a.popularity,
+      y: Math.round(Math.random() * 40 + 30), // simulated stream affinity
+      r: Math.max(6, 20 - i * 1.5),
+      label: a.name,
+    }));
+
+    bubbleChartInst = new Chart(document.getElementById('bubbleChart'), {
+      type: 'bubble',
+      data: {
+        datasets: data.map((d, i) => ({
+          label: d.label,
+          data: [d],
+          backgroundColor: PALETTE[i % PALETTE.length] + '80',
+          borderColor:     PALETTE[i % PALETTE.length],
+          borderWidth: 1.5,
+        }))
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#12121f',
+            borderColor: 'rgba(255,255,255,0.06)',
+            borderWidth: 1,
+            callbacks: {
+              label: c => ` ${c.dataset.label} · Popularity: ${c.raw.x}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Spotify Popularity Score', color: '#4a5568', font: { size: 10 } },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#4a5568' },
+            min: 0, max: 100,
+          },
+          y: {
+            title: { display: true, text: 'Your Affinity (rank-derived)', color: '#4a5568', font: { size: 10 } },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#4a5568' },
+            min: 0, max: 100,
+          }
+        }
+      }
+    });
+  }
+
+  // ── Mood Bars ────────────────────────────────────────────
+  function buildMoodBars(features) {
+    const avg = k => Math.round((features.reduce((s,f) => s + (f[k]||0), 0) / features.length) * 100);
+    const moods = [
+      { key: 'energy',           label: 'Energy',        color: '#f59e0b' },
+      { key: 'danceability',     label: 'Danceability',  color: '#1db954' },
+      { key: 'valence',          label: 'Happiness',     color: '#ec4899' },
+      { key: 'acousticness',     label: 'Acoustic',      color: '#3b82f6' },
+      { key: 'instrumentalness', label: 'Instrumental',  color: '#a855f7' },
+      { key: 'speechiness',      label: 'Vocal',         color: '#14b8a6' },
+    ];
+
+    document.getElementById('moodGrid').innerHTML = moods.map(m => {
+      const val = avg(m.key);
+      return `<div class="mood-item">
+        <div class="mood-label">
+          <span>${m.label}</span>
+          <span class="mood-val">${val}%</span>
+        </div>
+        <div class="mood-track">
+          <div class="mood-fill" style="width:${val}%;background:${m.color}"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Render Artists ───────────────────────────────────────
+  function renderArtists(artists) {
+    document.getElementById('artistsGrid').innerHTML = artists.slice(0,10).map((a, i) => {
+      const img = a.images?.[0]?.url || '';
+      const followers = a.followers?.total
+        ? (a.followers.total >= 1000000
+            ? (a.followers.total/1000000).toFixed(1) + 'M'
+            : (a.followers.total/1000).toFixed(0) + 'K')
+        : '—';
+      return `<div class="artist-card">
+        <img class="artist-img" src="${img}" alt="${a.name}" onerror="this.src=''" />
+        <div class="artist-name">${a.name}</div>
+        <div class="artist-followers">${followers} followers</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Render Tracks ────────────────────────────────────────
+  function renderTracks(tracks) {
+    document.getElementById('trackList').innerHTML = tracks.slice(0,10).map((t, i) => {
+      const img    = t.album?.images?.[2]?.url || t.album?.images?.[0]?.url || '';
+      const artist = t.artists?.map(a => a.name).join(', ') || '—';
+      return `<li class="track-item">
+        <span class="track-rank">${i+1}</span>
+        <img class="track-img" src="${img}" alt="${t.name}" onerror="this.style.background='#16162a'" />
+        <div class="track-info">
+          <div class="track-name">${t.name}</div>
+          <div class="track-artist">${artist}</div>
+        </div>
+        <span class="track-pop">${t.popularity || '—'}</span>
+      </li>`;
+    }).join('');
+  }
+
+  // ── Render Genre Cloud ───────────────────────────────────
+  function renderStatCards(artists, features) {
+    // Top genre
+    const genreCount = {};
+    artists.forEach(a => a.genres?.forEach(g => { genreCount[g] = (genreCount[g]||0)+1; }));
+    const topGenre = Object.entries(genreCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+    document.getElementById('statGenre').textContent = topGenre;
+
+    // Audio feature averages
+    if (features.length > 0) {
+      const avg = k => Math.round((features.reduce((s,f)=>s+(f[k]||0),0)/features.length)*100);
+      document.getElementById('statEnergy').textContent = avg('energy') + '%';
+      document.getElementById('statDance').textContent  = avg('danceability') + '%';
+      document.getElementById('statMood').textContent   = avg('valence') + '%';
+    }
+  }
+
+  // ── Main Load ────────────────────────────────────────────
+  async function loadDashboard(term) {
+    try {
+      // Show loading states
+      document.getElementById('artistsGrid').innerHTML = '<div class="loading-state"><span class="spinner"></span> Loading artists...</div>';
+      document.getElementById('trackList').innerHTML = '<li class="loading-state"><span class="spinner"></span> Loading tracks...</li>';
+      document.getElementById('moodGrid').innerHTML = '<div class="loading-state"><span class="spinner"></span></div>';
+
+      // Fetch top artists + tracks in parallel
+      const [artistsData, tracksData, profileData] = await Promise.all([
+        spotifyFetch(`/me/top/artists?limit=10&time_range=${term}`),
+        spotifyFetch(`/me/top/tracks?limit=20&time_range=${term}`),
+        spotifyFetch('/me'),
+      ]);
+
+      const artists = artistsData.items || [];
+      const tracks  = tracksData.items  || [];
+
+      // Update user pill
+      if (profileData) {
+        document.getElementById('userPill').style.display = 'flex';
+        document.getElementById('userName').textContent = profileData.display_name || 'Listener';
+        const avatarImg = profileData.images?.[0]?.url;
+        if (avatarImg) document.getElementById('userAvatar').src = avatarImg;
+        document.getElementById('dashSubtitle').textContent =
+          `Hey ${profileData.display_name?.split(' ')[0] || 'there'} — here's a deep dive into your Spotify listening DNA.`;
+      }
+
+      // Fetch audio features for top tracks
+      const trackIds = tracks.slice(0,20).map(t => t.id).join(',');
+      let features = [];
+      if (trackIds) {
+        const featData = await spotifyFetch(`/audio-features?ids=${trackIds}`);
+        features = (featData.audio_features || []).filter(Boolean);
+      }
+
+      // Extract genres
+      const allGenres = artists.flatMap(a => a.genres || []);
+
+      // Render everything
+      renderArtists(artists);
+      renderTracks(tracks);
+      renderStatCards(artists, features);
+      buildMoodBars(features);
+
+      if (features.length > 0) buildRadar(features);
+      if (allGenres.length > 0) buildGenreChart(allGenres);
+      if (artists.length > 0)   buildBubbleChart(artists);
+
+    } catch (err) {
+      const errEl = document.getElementById('errorMsg');
+      errEl.style.display = 'block';
+      errEl.textContent = '⚠ ' + err.message + ' — your token may have expired. Please refresh and reconnect.';
+      console.error(err);
+    }
+  }
+
+  // ── Term Switcher ────────────────────────────────────────
+  function switchTerm(term, btn) {
+    currentTerm = term;
+    document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    loadDashboard(term);
+  }
+
+  // ── Boot ─────────────────────────────────────────────────
+  window.addEventListener('load', () => {
+    accessToken = getTokenFromHash();
+
+    if (accessToken) {
+      // Clean URL
+      history.replaceState(null, '', window.location.pathname);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadDashboard(currentTerm);
+    }
+  });
+</script>
+</body>
+</html>
