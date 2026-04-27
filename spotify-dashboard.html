@@ -475,11 +475,17 @@
     }
   }
 
+  function switchTerm(term, btn) {
+    currentTerm = term;
+    document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    loadDashboard(term);
+  }
+
   async function logout() {
     sessionStorage.removeItem('sp_tok');
     sessionStorage.removeItem('sp_exp');
     sessionStorage.removeItem('pkce_v');
-    // Generate fresh PKCE so the forced account picker login works
     const v=randStr(64), c=await sha256b64(v);
     sessionStorage.setItem('pkce_v',v);
     window.location.href='https://accounts.spotify.com/authorize?'+new URLSearchParams({client_id:CLIENT_ID,response_type:'code',redirect_uri:REDIRECT_URI,scope:SCOPES,code_challenge_method:'S256',code_challenge:c,show_dialog:'true'});
@@ -488,7 +494,6 @@
   function showDashboard() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').style.display   = 'block';
-    document.getElementById('logoutBtn').style.display   = 'block';
   }
 
   // ── Boot ──────────────────────────────────────────────────
